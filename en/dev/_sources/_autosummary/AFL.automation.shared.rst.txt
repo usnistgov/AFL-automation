@@ -16,8 +16,11 @@ AFL.automation.shared
    MutableQueue
    PersistentConfig
    ServerDiscovery
+   TiledProxyDriver
    exceptions
+   liveplot
    mock_eic_client
+   motors
    samplecells
    serialization
    tiled

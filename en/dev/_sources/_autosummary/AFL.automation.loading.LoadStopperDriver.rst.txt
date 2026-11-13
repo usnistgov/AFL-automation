@@ -8,10 +8,8 @@ AFL.automation.loading.LoadStopperDriver
 
    .. autosummary::
    
-      Client
       Driver
       LoadStopperDriver
       SensorPollingThread
-      StopLoadCBv1
       StopLoadCBv2
    

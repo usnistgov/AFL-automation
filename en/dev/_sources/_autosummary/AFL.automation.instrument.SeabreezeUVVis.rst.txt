@@ -9,7 +9,8 @@ AFL.automation.instrument.SeabreezeUVVis
    .. autosummary::
    
       Driver
-      Eq
       Path
+      Real
       SeabreezeUVVis
+      suppress
    

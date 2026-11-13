@@ -9,6 +9,13 @@
    .. autosummary::
    
       test
+      version
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      PackageNotFoundError
    
 .. rubric:: Modules
 

@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Closed-Loop UV–Vis Color Matching &#8212; AFL-automation  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/ntd2d.css?v=525a25f0" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../_static/_static/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/closed-loop-color-matching';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/logo_light.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="How-to Guides" href="../how-to/index.html" />
+    <link rel="prev" title="OT-2 HTTP Driver End-to-End Example" href="ot2-http-driver-example.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
+  <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
+  
+
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo_text_large_light.svg" class="logo__image only-light" alt="AFL-automation  documentation - Home"/>
+    <img src="../_static/logo_text_large_dark.svg" class="logo__image only-dark pst-js-only" alt="AFL-automation  documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ot2-http-driver-example.html">OT-2 HTTP Driver End-to-End Example</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Closed-Loop UV–Vis Color Matching</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Tutorials</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Closed-Loop UV–Vis Color Matching</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="closed-loop-uv-vis-color-matching">
+<h1>Closed-Loop UV–Vis Color Matching<a class="headerlink" href="#closed-loop-uv-vis-color-matching" title="Link to this heading">#</a></h1>
+<p>This tutorial builds a closed-loop experiment that mixes four dye stocks,
+measures each sample, and uses Bayesian optimization to choose the next
+composition.</p>
+<p>The loop has four stages:</p>
+<ol class="arabic simple">
+<li><p>An Opentrons OT-2 robot (<code class="docutils literal notranslate"><span class="pre">OT2Prepare</span></code>) prepares a candidate composition.</p></li>
+<li><p>A pneumatic loader (<code class="docutils literal notranslate"><span class="pre">PneumaticPressureSampleCell</span></code>) moves the sample through
+a UV–Vis cell (<code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis</span></code>) and past a USB camera (<code class="docutils literal notranslate"><span class="pre">RGBCamera</span></code>)
+looking at the sample cell.</p></li>
+<li><p>Each driver writes its result to Tiled, and <code class="docutils literal notranslate"><span class="pre">DoubleAgentDriver</span></code> assembles
+the entries into one campaign dataset.</p></li>
+<li><p>A pipeline scores the spectrum against a target and proposes the next point
+on the four-component simplex.</p></li>
+</ol>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
+<p>This is an integration tutorial for an already commissioned laboratory. Before
+running it, start the following AFL servers through <a class="reference external" href="https://github.com/usnistgov/AFL-andon">Andon</a> and verify the physical deck, tubing,
+catch position, rinse procedure, and instrument safety limits:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Service</p></th>
+<th class="head"><p>Example address</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">OT2Prepare</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">localhost:5005</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">RGBCamera</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">localhost:5095</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">DoubleAgentDriver</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">localhost:5053</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">localhost:5051</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">PneumaticPressureSampleCell</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">piloader:5000</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Here’s a pictorial representation of how the services interact with each other
+and Tiled through a central control computer.
+The control computer runs the Python script that orchestrates the closed-loop experiment:</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../_images/afl_closed_loop_software.png"><img alt="AFL instrument control with HTTP servers." src="../_images/afl_closed_loop_software.png" style="width: 90%;" />
+</a>
+</figure>
+<p>All services must write to the same Tiled instance; this is handled automatically
+when the servers are started through Andon.
+The analysis environment also needs <code class="docutils literal notranslate"><span class="pre">AFL.double_agent</span></code>, NumPy, and xarray.</p>
+<p>The host names, ports, username, Tiled entry ID, labware path, and deck locations
+below are examples; replace them with values for your deployment.</p>
+<p>Start by importing the AFL-related modules used to construct the agent pipeline.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.APIServer.Client</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.tiled</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_tiled_client</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.double_agent.AcquisitionFunction</span><span class="w"> </span><span class="kn">import</span> <span class="n">BoTorchAcquisition</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.double_agent.AmplitudePhaseDistance</span><span class="w"> </span><span class="kn">import</span> <span class="n">AmplitudePhaseTargetScore</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.double_agent.Generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">BarycentricGrid</span><span class="p">,</span> <span class="n">RandomBoundedSimplex</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.double_agent.Pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.double_agent.Preprocessor</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplinePreprocessor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.double_agent.PyTorchExtrapolator</span><span class="w"> </span><span class="kn">import</span> <span class="n">BoTorchRegressor</span>
+</pre></div>
+</div>
+</section>
+<section id="connect-to-the-services">
+<h2>Connect to the Services<a class="headerlink" href="#connect-to-the-services" title="Link to this heading">#</a></h2>
+<p>Create a client for each service and use one campaign ID everywhere. A unique
+campaign ID prevents measurements from different runs from being combined.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ot2</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">5005</span><span class="p">)</span>
+<span class="n">camera</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">5095</span><span class="p">)</span>
+<span class="n">agent</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">5053</span><span class="p">)</span>
+<span class="n">uvvis</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">5051</span><span class="p">)</span>
+<span class="n">loader</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;piloader&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ot2</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="n">agent</span><span class="p">,</span> <span class="n">uvvis</span><span class="p">,</span> <span class="n">loader</span><span class="p">):</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s2">&quot;your-username&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="specify-the-optimization-problem">
+<h2>Specify the Optimization Problem<a class="headerlink" href="#specify-the-optimization-problem" title="Link to this heading">#</a></h2>
+<p>This notebook uses stocks of four dyes to match a target UV–Vis spectrum.
+The optimization problem is defined by the stock names, the total volume of
+each sample, and the number of initial and iterative samples.
+We use the <code class="docutils literal notranslate"><span class="pre">OT2Prepare</span></code> driver’s <code class="docutils literal notranslate"><span class="pre">prepare</span></code> task to mix the stocks, defining
+each sample in terms of its stock volume fractions.
+The optimization bounds are therefore defined by the volume fraction of each
+component.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tiled</span> <span class="o">=</span> <span class="n">get_tiled_client</span><span class="p">()</span>
+<span class="n">campaign_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;color-matching-</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="n">components</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;stock_Red&quot;</span><span class="p">,</span> <span class="s2">&quot;stock_Blue&quot;</span><span class="p">,</span> <span class="s2">&quot;stock_Green&quot;</span><span class="p">,</span> <span class="s2">&quot;stock_Yellow&quot;</span><span class="p">]</span>
+<span class="n">bounds</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">0.95</span><span class="p">}</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">components</span><span class="p">}</span>
+<span class="n">total_volume</span> <span class="o">=</span> <span class="s2">&quot;1200 ul&quot;</span>
+<span class="n">n_initial</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">n_iterations</span> <span class="o">=</span> <span class="mi">25</span>
+</pre></div>
+</div>
+</section>
+<section id="load-the-target-spectrum">
+<h2>Load the Target Spectrum<a class="headerlink" href="#load-the-target-spectrum" title="Link to this heading">#</a></h2>
+<p>The optimization target is an existing UV–Vis result in Tiled. Read its
+<code class="docutils literal notranslate"><span class="pre">wavelength</span></code> coordinate and <code class="docutils literal notranslate"><span class="pre">extinction</span></code> signal.
+You can also use a CSV file or any other source to define the target spectrum.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">target_entry_id</span> <span class="o">=</span> <span class="s2">&quot;REPLACE-WITH-A-TILED-ENTRY-ID&quot;</span>
+<span class="n">target_data</span> <span class="o">=</span> <span class="n">tiled</span><span class="p">[</span><span class="s2">&quot;run_documents&quot;</span><span class="p">][</span><span class="n">target_entry_id</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">(</span>
+    <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;wavelength&quot;</span><span class="p">,</span> <span class="s2">&quot;extinction&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">target_wavelengths</span> <span class="o">=</span> <span class="n">target_data</span><span class="p">[</span><span class="s2">&quot;wavelength&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+<span class="n">target_extinction</span> <span class="o">=</span> <span class="n">target_data</span><span class="p">[</span><span class="s2">&quot;extinction&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="configure-preparation-and-data-collection">
+<h2>Configure Preparation and Data Collection<a class="headerlink" href="#configure-preparation-and-data-collection" title="Link to this heading">#</a></h2>
+<p>Reset the OT-2, load the deck, and register the four stock solutions. The
+following is the layout used by the original experiment; change it to match
+your validated setup.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ot2</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;reset&quot;</span><span class="p">,</span> <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ot2</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+    <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;load_labware&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;opentrons_96_tiprack_20ul&quot;</span><span class="p">,</span>
+    <span class="n">slot</span><span class="o">=</span><span class="s2">&quot;5&quot;</span><span class="p">,</span>
+    <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ot2</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+    <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;load_labware&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;opentrons_96_tiprack_300ul&quot;</span><span class="p">,</span>
+    <span class="n">slot</span><span class="o">=</span><span class="s2">&quot;6&quot;</span><span class="p">,</span>
+    <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ot2</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+    <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;load_instrument&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;p20_single_gen2&quot;</span><span class="p">,</span>
+    <span class="n">mount</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+    <span class="n">tip_rack_slots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;5&quot;</span><span class="p">],</span>
+    <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ot2</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+    <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;load_instrument&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;p300_single&quot;</span><span class="p">,</span>
+    <span class="n">mount</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span>
+    <span class="n">tip_rack_slots</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;6&quot;</span><span class="p">],</span>
+    <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ot2</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+    <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;load_labware&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;nest_96_wellplate_2ml_deep&quot;</span><span class="p">,</span>
+    <span class="n">slot</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="p">,</span>
+    <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ot2</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+    <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;load_labware&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;nist_pneumatic_loader&quot;</span><span class="p">,</span>
+    <span class="n">slot</span><span class="o">=</span><span class="s2">&quot;10&quot;</span><span class="p">,</span>
+    <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">labware_definition</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span>
+    <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/path/to/nist_8_wellplate_20000ul.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
+<span class="p">)</span>
+<span class="n">ot2</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+    <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;load_labware&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="n">labware_definition</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">][</span><span class="s2">&quot;loadName&quot;</span><span class="p">],</span>
+    <span class="n">slot</span><span class="o">=</span><span class="s2">&quot;2&quot;</span><span class="p">,</span>
+    <span class="n">labware_json</span><span class="o">=</span><span class="n">labware_definition</span><span class="p">,</span>
+    <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">for</span> <span class="n">column</span><span class="p">,</span> <span class="n">color</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">((</span><span class="s2">&quot;Red&quot;</span><span class="p">,</span> <span class="s2">&quot;Green&quot;</span><span class="p">,</span> <span class="s2">&quot;Blue&quot;</span><span class="p">,</span> <span class="s2">&quot;Yellow&quot;</span><span class="p">),</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">ot2</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+        <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;add_stock&quot;</span><span class="p">,</span>
+        <span class="n">solution</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;stock_</span><span class="si">{</span><span class="n">color</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;2A</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;initial_volume&quot;</span><span class="p">:</span> <span class="s2">&quot;20 ml&quot;</span><span class="p">},</span>
+                <span class="p">{</span><span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;2B</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;initial_volume&quot;</span><span class="p">:</span> <span class="s2">&quot;20 ml&quot;</span><span class="p">},</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;concentrations&quot;</span><span class="p">:</span> <span class="p">{</span><span class="n">color</span><span class="p">:</span> <span class="s2">&quot;1 mg/ml&quot;</span><span class="p">},</span>
+            <span class="s2">&quot;volumes&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;H2O&quot;</span><span class="p">:</span> <span class="s2">&quot;20 ml&quot;</span><span class="p">},</span>
+            <span class="s2">&quot;solutes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">color</span><span class="p">],</span>
+            <span class="s2">&quot;tip_location&quot;</span><span class="p">:</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;6A</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;5A</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<span class="n">ot2</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+    <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;set_config&quot;</span><span class="p">,</span>
+    <span class="n">stock_mix_order</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;stock_Red&quot;</span><span class="p">,</span> <span class="s2">&quot;stock_Green&quot;</span><span class="p">,</span> <span class="s2">&quot;stock_Blue&quot;</span><span class="p">,</span> <span class="s2">&quot;stock_Yellow&quot;</span><span class="p">],</span>
+    <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Tell the agent how to find and align the outputs. <code class="docutils literal notranslate"><span class="pre">campaign_id_path</span></code> points
+to the campaign metadata written by <code class="docutils literal notranslate"><span class="pre">set_sample</span></code> later in the tutorial.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">input_spec</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;campaign_id&quot;</span><span class="p">:</span> <span class="n">campaign_id</span><span class="p">,</span>
+    <span class="s2">&quot;sample_dim&quot;</span><span class="p">:</span> <span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;composition&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;driver_name&quot;</span><span class="p">:</span> <span class="s2">&quot;OT2Prepare&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;task_name&quot;</span><span class="p">:</span> <span class="s2">&quot;prepare&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;campaign_id_path&quot;</span><span class="p">:</span> <span class="s2">&quot;AL_campaign_name&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;metadata&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;prepare.balanced_target.stock_volume_fractions&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mapping_to_vector&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;dims&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;component&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;avg_rgb&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;driver_name&quot;</span><span class="p">:</span> <span class="s2">&quot;RGBCamera&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;task_name&quot;</span><span class="p">:</span> <span class="s2">&quot;capture_rgb&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;campaign_id_path&quot;</span><span class="p">:</span> <span class="s2">&quot;attrs.AL_campaign_name&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;dataset&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;avg_rgb&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;uvvis&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;driver_name&quot;</span><span class="p">:</span> <span class="s2">&quot;SeabreezeUVVis&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;task_name&quot;</span><span class="p">:</span> <span class="s2">&quot;measure&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;campaign_id_path&quot;</span><span class="p">:</span> <span class="s2">&quot;attrs.AL_campaign_name&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;dataset&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;extinction&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+<span class="n">agent</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+    <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;setup_data_collection&quot;</span><span class="p">,</span>
+    <span class="n">input_spec</span><span class="o">=</span><span class="n">input_spec</span><span class="p">,</span>
+    <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="convert-suggestions-into-preparation-targets">
+<h2>Convert Suggestions into Preparation Targets<a class="headerlink" href="#convert-suggestions-into-preparation-targets" title="Link to this heading">#</a></h2>
+<p>The agent returns compositions as an xarray object. This helper converts each
+row into the mapping expected by <code class="docutils literal notranslate"><span class="pre">OT2Prepare.prepare</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">xarray_to_targets</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;color_sample&quot;</span><span class="p">,</span> <span class="n">total_volume</span><span class="o">=</span><span class="s2">&quot;1200 ul&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s2">&quot;component&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Input must have a &#39;component&#39; dimension&quot;</span><span class="p">)</span>
+
+    <span class="n">sample_dims</span> <span class="o">=</span> <span class="p">[</span><span class="n">dim</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">dims</span> <span class="k">if</span> <span class="n">dim</span> <span class="o">!=</span> <span class="s2">&quot;component&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">sample_dims</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">_sample</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">sample_dim</span> <span class="o">=</span> <span class="s2">&quot;_sample&quot;</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample_dims</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">sample_dim</span> <span class="o">=</span> <span class="n">sample_dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">_sample</span><span class="o">=</span><span class="n">sample_dims</span><span class="p">)</span>
+        <span class="n">sample_dim</span> <span class="o">=</span> <span class="s2">&quot;_sample&quot;</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">sample_dim</span><span class="p">,</span> <span class="s2">&quot;component&quot;</span><span class="p">)</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">sizes</span><span class="p">[</span><span class="n">sample_dim</span><span class="p">]):</span>
+        <span class="n">sample</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">isel</span><span class="p">({</span><span class="n">sample_dim</span><span class="p">:</span> <span class="n">index</span><span class="p">})</span>
+        <span class="n">targets</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span> <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">sizes</span><span class="p">[</span><span class="n">sample_dim</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;stock_volume_fractions&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">component</span><span class="p">):</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">component</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">component</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">sample</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;total_volume&quot;</span><span class="p">:</span> <span class="n">total_volume</span><span class="p">,</span>
+        <span class="p">})</span>
+    <span class="k">return</span> <span class="n">targets</span>
+</pre></div>
+</div>
+</section>
+<section id="run-one-physical-experiment">
+<h2>Run One Physical Experiment<a class="headerlink" href="#run-one-physical-experiment" title="Link to this heading">#</a></h2>
+<p>For every candidate, assign the same sample identity and campaign to all
+drivers. Keep the returned Tiled IDs: the agent uses them to assemble the
+composition, spectrum, and image without copying the arrays through the
+control script.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">prepare_and_measure</span><span class="p">(</span><span class="n">iteration</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">destination</span><span class="p">):</span>
+    <span class="n">sample_uuid</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;SAM-</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">sample_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">campaign_id</span><span class="si">}</span><span class="s2">-sample-</span><span class="si">{</span><span class="n">iteration</span><span class="si">:</span><span class="s2">03d</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ot2</span><span class="p">,</span> <span class="n">uvvis</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="n">loader</span><span class="p">):</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+            <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;set_sample&quot;</span><span class="p">,</span>
+            <span class="n">sample_name</span><span class="o">=</span><span class="n">sample_name</span><span class="p">,</span>
+            <span class="n">sample_uuid</span><span class="o">=</span><span class="n">sample_uuid</span><span class="p">,</span>
+            <span class="n">AL_campaign_name</span><span class="o">=</span><span class="n">campaign_id</span><span class="p">,</span>
+            <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">prepared</span> <span class="o">=</span> <span class="n">ot2</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+        <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;prepare&quot;</span><span class="p">,</span>
+        <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="n">destination</span><span class="p">,</span>
+        <span class="n">capture_task_video</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">composition_id</span> <span class="o">=</span> <span class="n">prepared</span><span class="p">[</span><span class="s2">&quot;tiled_entry_id&quot;</span><span class="p">]</span>
+
+    <span class="n">ot2</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+        <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;transfer_to_catch&quot;</span><span class="p">,</span>
+        <span class="n">source</span><span class="o">=</span><span class="n">destination</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;10A1&quot;</span><span class="p">,</span>
+        <span class="n">volume</span><span class="o">=</span><span class="s2">&quot;900&quot;</span><span class="p">,</span>
+        <span class="n">mix_before</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
+        <span class="n">drop_tip</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">return_tip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">blow_out</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">tip_location</span><span class="o">=</span><span class="s2">&quot;6A5&quot;</span><span class="p">,</span> <span class="c1"># Replace with your actual tip location you would like to use for the transfer</span>
+        <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ot2</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;home&quot;</span><span class="p">,</span> <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">loader</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+        <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;loadSample&quot;</span><span class="p">,</span>
+        <span class="n">load_dest_label</span><span class="o">=</span><span class="s2">&quot;afterUVVis&quot;</span><span class="p">,</span> <span class="c1"># Replace with your actual destination label</span>
+        <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># Replace fixed delays with validated settling times.</span>
+    <span class="n">uvvis_result</span> <span class="o">=</span> <span class="n">uvvis</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+        <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;measure&quot;</span><span class="p">,</span>
+        <span class="n">n_frames</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">reduced</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">exposure</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">wavelengths</span><span class="o">=</span><span class="p">[</span><span class="mf">300.0</span><span class="p">,</span> <span class="mf">900.0</span><span class="p">],</span>
+        <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">loader</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+        <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;advanceSample&quot;</span><span class="p">,</span>
+        <span class="n">load_dest_label</span><span class="o">=</span><span class="s2">&quot;afterTurb&quot;</span><span class="p">,</span> <span class="c1"># Replace with your actual destination label</span>
+        <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">rgb_result</span> <span class="o">=</span> <span class="n">camera</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+        <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;capture_rgb&quot;</span><span class="p">,</span>
+        <span class="n">plotting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">loader</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;rinseCell&quot;</span><span class="p">,</span> <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">composition_id</span><span class="p">,</span> <span class="n">uvvis_result</span><span class="p">[</span><span class="s2">&quot;tiled_entry_id&quot;</span><span class="p">],</span> <span class="n">rgb_result</span><span class="p">[</span><span class="s2">&quot;tiled_entry_id&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="seed-the-campaign">
+<h2>Seed the Campaign<a class="headerlink" href="#seed-the-campaign" title="Link to this heading">#</a></h2>
+<p>Bayesian optimization needs initial observations.
+Since we are working with volume fractions, we can use a random simplex
+generator to create initial samples so that the resulting compositions are
+valid four-component mixtures that add up to 1.0.</p>
+<p>The following code generates <code class="docutils literal notranslate"><span class="pre">n_initial</span></code> reproducible samples from the
+simplex, runs them through <code class="docutils literal notranslate"><span class="pre">prepare_and_measure</span></code>, and appends their Tiled
+entries to the agent dataset.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">initial_data</span> <span class="o">=</span> <span class="n">RandomBoundedSimplex</span><span class="p">(</span>
+    <span class="n">output_variable</span><span class="o">=</span><span class="s2">&quot;initial_composition&quot;</span><span class="p">,</span>
+    <span class="n">components</span><span class="o">=</span><span class="n">components</span><span class="p">,</span>
+    <span class="n">n_samples</span><span class="o">=</span><span class="n">n_initial</span><span class="p">,</span>
+    <span class="n">sample_dim</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+    <span class="n">basis</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">random_seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="p">)</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">())</span><span class="o">.</span><span class="n">output</span>
+
+<span class="n">initial_targets</span> <span class="o">=</span> <span class="n">xarray_to_targets</span><span class="p">(</span>
+    <span class="n">initial_data</span><span class="p">[</span><span class="s2">&quot;initial_composition&quot;</span><span class="p">],</span> <span class="n">total_volume</span><span class="o">=</span><span class="n">total_volume</span>
+<span class="p">)</span>
+<span class="k">for</span> <span class="n">iteration</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">initial_targets</span><span class="p">):</span>
+    <span class="n">wells</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">ot2</span><span class="o">.</span><span class="n">query_driver</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="s2">&quot;get_available_wells&quot;</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">composition_id</span><span class="p">,</span> <span class="n">uvvis_id</span><span class="p">,</span> <span class="n">rgb_id</span> <span class="o">=</span> <span class="n">prepare_and_measure</span><span class="p">(</span>
+        <span class="n">iteration</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">wells</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">agent</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+        <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;append_dataset&quot;</span><span class="p">,</span>
+        <span class="n">entries</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;composition&quot;</span><span class="p">:</span> <span class="n">composition_id</span><span class="p">,</span>
+            <span class="s2">&quot;avg_rgb&quot;</span><span class="p">:</span> <span class="n">rgb_id</span><span class="p">,</span>
+            <span class="s2">&quot;uvvis&quot;</span><span class="p">:</span> <span class="n">uvvis_id</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="build-the-optimization-pipeline">
+<h2>Build the Optimization Pipeline<a class="headerlink" href="#build-the-optimization-pipeline" title="Link to this heading">#</a></h2>
+<p>The pipeline interpolates all spectra onto one wavelength grid, computes an
+amplitude-and-phase distance from the target, fits a regressor, and minimizes
+that distance over valid four-component mixtures.</p>
+<p>An RGB image is recorded with each sample for inspection, but it is not part of
+this objective.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">build_pipeline</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">spectrum</span><span class="p">):</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">&quot;target_spectrum&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;wavelength&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">spectrum</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))},</span>
+        <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;wavelength&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)},</span>
+    <span class="p">)</span>
+    <span class="n">target_spline</span> <span class="o">=</span> <span class="n">SplinePreprocessor</span><span class="p">(</span>
+        <span class="n">input_variable</span><span class="o">=</span><span class="s2">&quot;target_spectrum&quot;</span><span class="p">,</span>
+        <span class="n">output_variable</span><span class="o">=</span><span class="s2">&quot;spline_target_spectrum&quot;</span><span class="p">,</span>
+        <span class="n">dim</span><span class="o">=</span><span class="s2">&quot;wavelength&quot;</span><span class="p">,</span>
+        <span class="n">x_min</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">)),</span>
+        <span class="n">x_max</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">)),</span>
+        <span class="n">smoothing_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">spline_degree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">target_spline</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+    <span class="n">spline_values</span> <span class="o">=</span> <span class="n">target_spline</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="s2">&quot;spline_target_spectrum&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">return</span> <span class="n">Pipeline</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;spectral_shape_matching&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Bayesian optimization of UV--Vis color match.&quot;</span><span class="p">,</span>
+        <span class="n">ops</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">SplinePreprocessor</span><span class="p">(</span>
+                <span class="n">input_variable</span><span class="o">=</span><span class="s2">&quot;uvvis&quot;</span><span class="p">,</span>
+                <span class="n">output_variable</span><span class="o">=</span><span class="s2">&quot;spline_uvvis&quot;</span><span class="p">,</span>
+                <span class="n">dim</span><span class="o">=</span><span class="s2">&quot;wavelength&quot;</span><span class="p">,</span>
+                <span class="n">output_dim</span><span class="o">=</span><span class="s2">&quot;spline_wavelength&quot;</span><span class="p">,</span>
+                <span class="n">sample_dim</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+                <span class="n">n_points</span><span class="o">=</span><span class="mi">201</span><span class="p">,</span>
+                <span class="n">smoothing_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                <span class="n">spline_degree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">x_min</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">)),</span>
+                <span class="n">x_max</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">)),</span>
+            <span class="p">),</span>
+            <span class="n">AmplitudePhaseTargetScore</span><span class="p">(</span>
+                <span class="n">input_variable</span><span class="o">=</span><span class="s2">&quot;spline_uvvis&quot;</span><span class="p">,</span>
+                <span class="n">output_variable</span><span class="o">=</span><span class="s2">&quot;score&quot;</span><span class="p">,</span>
+                <span class="n">target</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">spline_values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                <span class="n">sample_dim</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+                <span class="n">feature_dim</span><span class="o">=</span><span class="s2">&quot;spline_wavelength&quot;</span><span class="p">,</span>
+                <span class="n">method</span><span class="o">=</span><span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">BarycentricGrid</span><span class="p">(</span>
+                <span class="n">output_variable</span><span class="o">=</span><span class="s2">&quot;composition_grid&quot;</span><span class="p">,</span>
+                <span class="n">components</span><span class="o">=</span><span class="n">components</span><span class="p">,</span>
+                <span class="n">sample_dim</span><span class="o">=</span><span class="s2">&quot;grid&quot;</span><span class="p">,</span>
+                <span class="n">grid_spec</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+                <span class="n">pts_per_row</span><span class="o">=</span><span class="mi">41</span><span class="p">,</span>
+                <span class="n">basis</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                <span class="n">dim</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                <span class="n">eps</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">BoTorchRegressor</span><span class="p">(</span>
+                <span class="n">feature_input_variable</span><span class="o">=</span><span class="s2">&quot;composition&quot;</span><span class="p">,</span>
+                <span class="n">predictor_input_variable</span><span class="o">=</span><span class="s2">&quot;score&quot;</span><span class="p">,</span>
+                <span class="n">output_prefix</span><span class="o">=</span><span class="s2">&quot;bayesopt&quot;</span><span class="p">,</span>
+                <span class="n">grid_variable</span><span class="o">=</span><span class="s2">&quot;composition_grid&quot;</span><span class="p">,</span>
+                <span class="n">grid_dim</span><span class="o">=</span><span class="s2">&quot;grid&quot;</span><span class="p">,</span>
+                <span class="n">sample_dim</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+                <span class="n">objective_direction</span><span class="o">=</span><span class="s2">&quot;minimize&quot;</span><span class="p">,</span>
+                <span class="n">standardize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">posterior_optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">posterior_optimize_restarts</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+                <span class="n">posterior_optimize_raw_samples</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+                <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+                <span class="n">is_simplex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">BoTorchAcquisition</span><span class="p">(</span>
+                <span class="n">feature_input_variable</span><span class="o">=</span><span class="s2">&quot;composition&quot;</span><span class="p">,</span>
+                <span class="n">predictor_input_variable</span><span class="o">=</span><span class="s2">&quot;score&quot;</span><span class="p">,</span>
+                <span class="n">grid_variable</span><span class="o">=</span><span class="s2">&quot;composition_grid&quot;</span><span class="p">,</span>
+                <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+                <span class="n">grid_dim</span><span class="o">=</span><span class="s2">&quot;grid&quot;</span><span class="p">,</span>
+                <span class="n">sample_dim</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+                <span class="n">objective_direction</span><span class="o">=</span><span class="s2">&quot;minimize&quot;</span><span class="p">,</span>
+                <span class="n">standardize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">output_prefix</span><span class="o">=</span><span class="s2">&quot;bayesopt&quot;</span><span class="p">,</span>
+                <span class="n">output_variable</span><span class="o">=</span><span class="s2">&quot;suggested_sample&quot;</span><span class="p">,</span>
+                <span class="n">excluded_comps_variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">],</span>
+                <span class="n">excluded_comps_dim</span><span class="o">=</span><span class="s2">&quot;component&quot;</span><span class="p">,</span>
+                <span class="n">exclusion_radius</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+                <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">is_simplex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">acquisition_kind</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">build_pipeline</span><span class="p">(</span><span class="n">target_wavelengths</span><span class="p">,</span> <span class="n">target_extinction</span><span class="p">)</span>
+<span class="n">pipeline_id</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">deposit_obj</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span>
+<span class="n">agent</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+    <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;initialize_pipeline&quot;</span><span class="p">,</span>
+    <span class="n">db_uuid</span><span class="o">=</span><span class="n">pipeline_id</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;bayesopt&quot;</span><span class="p">,</span>
+    <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="close-the-loop">
+<h2>Close the Loop<a class="headerlink" href="#close-the-loop" title="Link to this heading">#</a></h2>
+<p>Each call to <code class="docutils literal notranslate"><span class="pre">predict</span></code> evaluates the accumulated campaign data and deposits
+the pipeline result. Retrieve <code class="docutils literal notranslate"><span class="pre">last_results</span></code>, prepare its suggestion, and
+append the new measurements before requesting another prediction.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_initial</span><span class="p">,</span> <span class="n">n_initial</span> <span class="o">+</span> <span class="n">n_iterations</span><span class="p">):</span>
+    <span class="n">agent</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+        <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;predict&quot;</span><span class="p">,</span>
+        <span class="n">AL_campaign_name</span><span class="o">=</span><span class="n">campaign_id</span><span class="p">,</span>
+        <span class="n">deposit</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">get_driver_object</span><span class="p">(</span><span class="s2">&quot;last_results&quot;</span><span class="p">)</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">xarray_to_targets</span><span class="p">(</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">suggested_sample</span><span class="p">,</span> <span class="n">total_volume</span><span class="o">=</span><span class="n">total_volume</span>
+    <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current scores: </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">score</span><span class="o">.</span><span class="n">values</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Suggested composition: </span><span class="si">{</span><span class="n">target</span><span class="p">[</span><span class="s1">&#39;stock_volume_fractions&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">wells</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">ot2</span><span class="o">.</span><span class="n">query_driver</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="s2">&quot;get_available_wells&quot;</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">composition_id</span><span class="p">,</span> <span class="n">uvvis_id</span><span class="p">,</span> <span class="n">rgb_id</span> <span class="o">=</span> <span class="n">prepare_and_measure</span><span class="p">(</span>
+        <span class="n">iteration</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">wells</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">agent</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span>
+        <span class="n">task_name</span><span class="o">=</span><span class="s2">&quot;append_dataset&quot;</span><span class="p">,</span>
+        <span class="n">entries</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;composition&quot;</span><span class="p">:</span> <span class="n">composition_id</span><span class="p">,</span>
+            <span class="s2">&quot;avg_rgb&quot;</span><span class="p">:</span> <span class="n">rgb_id</span><span class="p">,</span>
+            <span class="s2">&quot;uvvis&quot;</span><span class="p">:</span> <span class="n">uvvis_id</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>After the final iteration, prepare the predicted best composition as a physical
+confirmation sample:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">best_target</span> <span class="o">=</span> <span class="n">xarray_to_targets</span><span class="p">(</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">bayesopt_best_x</span><span class="p">,</span> <span class="n">total_volume</span><span class="o">=</span><span class="n">total_volume</span>
+<span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">wells</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">ot2</span><span class="o">.</span><span class="n">query_driver</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="s2">&quot;get_available_wells&quot;</span><span class="p">,</span> <span class="n">slot</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">composition_id</span><span class="p">,</span> <span class="n">uvvis_id</span><span class="p">,</span> <span class="n">rgb_id</span> <span class="o">=</span> <span class="n">prepare_and_measure</span><span class="p">(</span>
+    <span class="n">n_initial</span> <span class="o">+</span> <span class="n">n_iterations</span><span class="p">,</span> <span class="n">best_target</span><span class="p">,</span> <span class="n">wells</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;Tiled entries: composition=</span><span class="si">{</span><span class="n">composition_id</span><span class="si">}</span><span class="s2">, &quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;UV-Vis=</span><span class="si">{</span><span class="n">uvvis_id</span><span class="si">}</span><span class="s2">, image=</span><span class="si">{</span><span class="n">rgb_id</span><span class="si">}</span><span class="s2">.&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The campaign’s Tiled entries preserve the formulation, spectrum, image, and
+optimization results for later analysis.</p>
+<p>Here’s an example of how to read the campaign dataset and plot the UV–Vis
+spectra and corresponding images for the target and predicted best composition:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">target_img_id</span> <span class="o">=</span> <span class="s2">&quot;&lt;replace-with-tiled-entry-id-for-target-image&gt;&quot;</span>
+<span class="n">target_uvvis_id</span> <span class="o">=</span> <span class="s2">&quot;&lt;replace-with-tiled-entry-id-for-target-uvvis&gt;&quot;</span>
+
+<span class="n">target_img</span> <span class="o">=</span> <span class="n">tiled</span><span class="p">[</span><span class="s2">&quot;run_documents&quot;</span><span class="p">][</span><span class="n">target_img_id</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;img_rgb&quot;</span><span class="p">,</span> <span class="s2">&quot;mask&quot;</span><span class="p">,</span> <span class="s2">&quot;avg_rgb&quot;</span><span class="p">])</span>
+<span class="n">target_uvvis</span> <span class="o">=</span> <span class="n">tiled</span><span class="p">[</span><span class="s2">&quot;run_documents&quot;</span><span class="p">][</span><span class="n">target_uvvis_id</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;wavelength&quot;</span><span class="p">,</span> <span class="s2">&quot;extinction&quot;</span><span class="p">])</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="c1"># Target image</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">target_img</span><span class="p">[</span><span class="s2">&quot;img_rgb&quot;</span><span class="p">])</span>
+<span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">component</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s1">&#39;stock_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">for</span> <span class="n">component</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">bayesopt_best_x</span><span class="o">.</span><span class="n">component</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">bayesopt_best_x</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+
+<span class="c1"># Target UV–Vis spectrum</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">target_wavelengths</span><span class="p">,</span> <span class="n">target_extinction</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;target&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">target_uvvis</span><span class="p">[</span><span class="s2">&quot;wavelength&quot;</span><span class="p">],</span> <span class="n">target_uvvis</span><span class="p">[</span><span class="s2">&quot;extinction&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;predicted&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Wavelength&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Extinction&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Score </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">bayesopt_best_f</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You should see something like this:</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../_images/output.png"><img alt="Final campaign results showing the target image and UV–Vis spectrum." src="../_images/output.png" style="width: 90%;" />
+</a>
+</figure>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="ot2-http-driver-example.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">OT-2 HTTP Driver End-to-End Example</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../how-to/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">How-to Guides</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#connect-to-the-services">Connect to the Services</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#specify-the-optimization-problem">Specify the Optimization Problem</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-the-target-spectrum">Load the Target Spectrum</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configure-preparation-and-data-collection">Configure Preparation and Data Collection</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convert-suggestions-into-preparation-targets">Convert Suggestions into Preparation Targets</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-one-physical-experiment">Run One Physical Experiment</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#seed-the-campaign">Seed the Campaign</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-the-optimization-pipeline">Build the Optimization Pipeline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#close-the-loop">Close the Loop</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/tutorials/closed-loop-color-matching.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright : Contribution of the US Government.  Not subject to copyright in the United States..
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+
+  <!-- Taken from https://www.filamentgroup.com/lab/html-includes/#another-demo%3A-including-another-html-file -->
+  <iframe src="../_static/ntd2d_menu.html" onload="this.before((this.contentDocument.body||this.contentDocument).children[0]);this.remove()"></iframe>
+  </body>
+</html>

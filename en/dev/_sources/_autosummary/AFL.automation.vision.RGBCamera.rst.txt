@@ -11,4 +11,5 @@ AFL.automation.vision.RGBCamera
       Driver
       NeutronSampleCell
       RGBCamera
+      SampleCell
    

@@ -12,4 +12,5 @@ AFL.automation.instrument.OpticalTurbidity
       Eq
       NeutronSampleCell
       OpticalTurbidity
+      SampleCell
    

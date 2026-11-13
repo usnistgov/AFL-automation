@@ -1,0 +1,24 @@
+AFL.automation.shared.liveplot
+==============================
+
+.. automodule:: AFL.automation.shared.liveplot
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_tiled_client
+      render_template
+      urlencode
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Any
+      Driver
+      Eq
+      LivePlotBO
+      LivePlottingDriver
+   

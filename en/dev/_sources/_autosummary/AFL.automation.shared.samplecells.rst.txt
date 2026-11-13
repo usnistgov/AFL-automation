@@ -11,4 +11,6 @@ AFL.automation.shared.samplecells
       ImageProcessing
       NeutronSampleCell
       Path
+      SampleCell
+      ScrewCapVial
    

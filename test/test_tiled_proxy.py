@@ -92,6 +92,156 @@ def test_search_keeps_pagination_and_data_links_on_the_proxy(server):
     assert response.json['data'][0]['links']['full'] == 'http://localhost/api/v1/array/full/entry'
 
 
+def test_distinct_fallback_collects_all_pages_with_filters_and_counts(tmp_path):
+    requests = []
+    filter_params = {
+        'filter[in][condition][key]': 'attrs.AL_campaign_name',
+        'filter[in][condition][value]': '["campaign-1"]',
+    }
+
+    def upstream(request):
+        requests.append(request)
+        assert request.headers['Authorization'] == 'Apikey test-key'
+        if '/distinct/' in request.url.path:
+            return httpx.Response(500, json={'detail': 'Internal server error'})
+        assert request.url.path == '/api/v1/search/run_documents'
+        for key, value in filter_params.items():
+            assert request.url.params[key] == value
+        if request.url.params.get('page[cursor]') == 'last-page':
+            return httpx.Response(200, json={
+                'data': [{'attributes': {
+                    'metadata': {'attrs': {'driver_name': 'driver-later', 'labels': [1, 2]}},
+                    'structure_family': 'array', 'specs': [{'name': 'xarray'}],
+                }}],
+                'links': {'next': None},
+            })
+        assert request.url.params.get_list('fields') == ['metadata', 'structure_family', 'specs']
+        assert 'metadata' not in request.url.params
+        # The backend may cap the requested limit. Always follow its next link.
+        next_url = httpx.URL('http://nas:8000/api/v1/search/run_documents', params={
+            **filter_params, 'page[cursor]': 'last-page',
+        })
+        return httpx.Response(200, json={
+            'data': [{'attributes': {
+                'metadata': {'attrs': {'driver_name': 'driver-first', 'labels': [1, 2]}},
+                'structure_family': 'array', 'specs': [{'name': 'xarray'}],
+            }}, {'attributes': {
+                'metadata': {'driver_name': 'driver-flat'},
+                'structure_family': 'container', 'specs': [],
+            }}],
+            'links': {'next': str(next_url)},
+        })
+
+    http_client = httpx.Client(base_url='http://nas:8000/', transport=httpx.MockTransport(upstream))
+    api = proxy.create_server({'uri': 'http://nas:8000/', 'api_key': 'test-key'},
+                              afl_home=tmp_path, http_client=http_client)
+    try:
+        response = api.app.test_client().get('/api/v1/distinct/run_documents', query_string=[
+            ('metadata', 'attrs.driver_name'), ('metadata', 'driver_name'), ('metadata', 'attrs.labels'),
+            ('counts', 'true'), ('structure_families', 'true'), ('specs', 'true'),
+            *filter_params.items(),
+        ])
+        assert response.status_code == 200
+        assert len(requests) == 3
+        assert response.json == {
+            'metadata': {
+                'attrs.driver_name': [
+                    {'value': 'driver-first', 'count': 1}, {'value': None, 'count': 1},
+                    {'value': 'driver-later', 'count': 1},
+                ],
+                'driver_name': [{'value': None, 'count': 2}, {'value': 'driver-flat', 'count': 1}],
+                'attrs.labels': [{'value': [1, 2], 'count': 2}, {'value': None, 'count': 1}],
+            },
+            'structure_families': [{'value': 'array', 'count': 2}, {'value': 'container', 'count': 1}],
+            'specs': [{'value': [{'name': 'xarray'}], 'count': 2}, {'value': [], 'count': 1}],
+        }
+    finally:
+        api.driver.close()
+
+
+def test_distinct_fallback_preserves_response_and_json_value_types(tmp_path):
+    def upstream(request):
+        if '/distinct/' in request.url.path:
+            return httpx.Response(500, json={'detail': 'distinct failed'})
+        return httpx.Response(200, json={
+            'data': [{'attributes': {'metadata': {'value': value}}} for value in (True, 1, True)],
+            'links': {'next': None},
+        })
+
+    http_client = httpx.Client(base_url='http://nas:8000/', transport=httpx.MockTransport(upstream))
+    driver = proxy.TiledProxyDriver(uri='http://nas:8000/', afl_home=tmp_path, http_client=http_client)
+    try:
+        response = driver.upstream_request('GET', 'api/v1/distinct/run_documents', b'metadata=value')
+        response.raise_for_status()
+        assert response.request.url.path == '/api/v1/distinct/run_documents'
+        assert response.json() == {'metadata': {'value': [{'value': True}, {'value': 1}]}}
+    finally:
+        driver.close()
+
+
+@pytest.mark.parametrize('status', [200, 400, 401, 403, 404])
+def test_distinct_preserves_success_and_request_errors_without_fallback(tmp_path, status):
+    requests = []
+    payload = {'metadata': {'attrs.driver_name': [{'value': 'driver-native'}]}}
+
+    def upstream(request):
+        requests.append(request)
+        return httpx.Response(status, json=payload)
+
+    http_client = httpx.Client(base_url='http://nas:8000/', transport=httpx.MockTransport(upstream))
+    driver = proxy.TiledProxyDriver(uri='http://nas:8000/', afl_home=tmp_path, http_client=http_client)
+    try:
+        response = driver.upstream_request('GET', 'api/v1/distinct/run_documents', b'metadata=attrs.driver_name')
+        assert response.status_code == status
+        assert response.json() == payload
+        assert len(requests) == 1
+    finally:
+        driver.close()
+
+
+@pytest.mark.parametrize('status', [405, 500, 501])
+def test_distinct_fallback_propagates_search_failure(tmp_path, status):
+    def upstream(request):
+        if '/distinct/' in request.url.path:
+            return httpx.Response(status, json={'detail': 'distinct failed'})
+        return httpx.Response(503, json={'detail': 'search unavailable'})
+
+    http_client = httpx.Client(base_url='http://nas:8000/', transport=httpx.MockTransport(upstream))
+    driver = proxy.TiledProxyDriver(uri='http://nas:8000/', afl_home=tmp_path, http_client=http_client)
+    try:
+        response = driver.upstream_request('GET', 'api/v1/distinct/run_documents', b'metadata=attrs.driver_name')
+        assert response.status_code == 503
+        assert response.json() == {'detail': 'search unavailable'}
+    finally:
+        driver.close()
+
+
+@pytest.mark.parametrize('next_link', [
+    'http://other-host:8000/api/v1/search/run_documents?page[offset]=1',
+    'http://nas:8000/api/v1/search/run_documents?metadata=attrs.driver_name',
+])
+def test_distinct_fallback_rejects_foreign_or_repeated_pagination(tmp_path, next_link):
+    requests = []
+
+    def upstream(request):
+        requests.append(request)
+        if '/distinct/' in request.url.path:
+            return httpx.Response(500, json={'detail': 'distinct failed'})
+        return httpx.Response(200, json={
+            'data': [{'attributes': {'metadata': {'attrs': {'driver_name': 'first-page'}}}}],
+            'links': {'next': next_link},
+        })
+
+    http_client = httpx.Client(base_url='http://nas:8000/', transport=httpx.MockTransport(upstream))
+    driver = proxy.TiledProxyDriver(uri='http://nas:8000/', afl_home=tmp_path, http_client=http_client)
+    try:
+        with pytest.raises(ValueError, match='pagination link'):
+            driver.upstream_request('GET', 'api/v1/distinct/run_documents', b'metadata=attrs.driver_name')
+        assert len(requests) <= 3
+    finally:
+        driver.close()
+
+
 def test_array_data_remains_binary(server):
     api, _ = server
     response = api.app.test_client().get('/api/v1/array/full/entry')

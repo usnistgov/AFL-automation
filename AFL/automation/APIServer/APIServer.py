@@ -293,6 +293,7 @@ class APIServer:
         '''
         Return the functions, params, and defaults to be shown in this server's quickbar
         '''
+        self.driver.refresh_quickbar()
         return jsonify(self.driver.quickbar.function_info),200
 
     def is_server_live(self):
@@ -342,23 +343,80 @@ class APIServer:
             self.app.logger.debug(f'Adding route {route} for function named {name} with baked-in kwargs {kwarg_add}')
             self.app.add_url_rule(route,name,response_function,methods=['GET'])
 
+    def _make_json_safe(self, value):
+        """Convert common scientific-Python values into Flask JSON values."""
+        if isinstance(value, (str, int, float, bool)) or value is None:
+            return value
+        if isinstance(value, pathlib.Path):
+            return str(value)
+        if isinstance(value, dict):
+            return {self._make_json_safe(key): self._make_json_safe(item) for key, item in value.items()}
+        if isinstance(value, (list, tuple, set)):
+            return [self._make_json_safe(item) for item in value]
+        if hasattr(value, 'item'):
+            try:
+                return self._make_json_safe(value.item())
+            except Exception:
+                pass
+        if hasattr(value, 'tolist'):
+            try:
+                return self._make_json_safe(value.tolist())
+            except Exception:
+                pass
+        if hasattr(value, 'items'):
+            try:
+                return {self._make_json_safe(key): self._make_json_safe(item) for key, item in value.items()}
+            except Exception:
+                pass
+        if hasattr(value, '__iter__') and not isinstance(value, (bytes, bytearray)):
+            try:
+                return [self._make_json_safe(item) for item in list(value)]
+            except Exception:
+                pass
+        try:
+            return str(value)
+        except Exception:
+            return repr(value)
+
+    def _normalize_driver_task(self, task):
+        if task is None:
+            return {}
+        normalized = {}
+        for key, value in dict(task).items():
+            if isinstance(value, (list, tuple)) and len(value) == 1:
+                value = value[0]
+            if isinstance(value, str):
+                value = value.strip()
+            normalized[key] = value
+        return normalized
+
     def query_driver(self):
         task = request.get_json(silent=True)
         if task is None:
             task = request.args
+        task = self._normalize_driver_task(task)
 
         self.app.logger.info(f'Request for {request.args}')
         if 'r' in task:
-            if task['r'] in self.driver.unqueued.functions:
-                fn_name = task['r']
+            fn_name = task['r']
+            if fn_name in self.driver.unqueued.functions:
                 call_kwargs = dict(task)
-                # Remove router control key before forwarding kwargs.
                 call_kwargs.pop('r', None)
-                return getattr(self.driver, fn_name)(**call_kwargs),200
+                try:
+                    result = getattr(self.driver, fn_name)(**call_kwargs)
+                    return self._make_json_safe(result),200
+                except Exception as exc:
+                    self.app.logger.exception('Driver query failed for %s', fn_name)
+                    return {'status': 'error', 'route': fn_name, 'message': str(exc)},500
             else:
-                return "No such task found as an unqueued function in driver"
+                return {
+                    'status': 'error',
+                    'route': fn_name,
+                    'message': 'No such task found as an unqueued function in driver',
+                    'available_routes': sorted(self.driver.unqueued.functions),
+                },404
         else:
-            return "No task specified, add argument r=task to get result",404
+            return {'status': 'error', 'message': 'No task specified, add argument r=task to get result'},404
 
 
 

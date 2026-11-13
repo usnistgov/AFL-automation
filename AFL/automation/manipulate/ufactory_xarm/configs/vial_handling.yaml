@@ -1,0 +1,36 @@
+name: VialHandling
+
+# Rail position in mm.
+rail_position: 700
+
+# Taught joint entry poses in degrees.
+# Vertical aligns X/Y together at entry Z, then moves Z to the target.
+# Horizontal aligns Y/Z together at entry X, then moves X to the target.
+# Each location maps its supported approaches to one of these taught entries.
+# A base pose is followed by the mapped location entry.
+poses:
+  horizontal:
+    base: [-10.603787,-1.997216,-2.248802, 12.259406, -14.387486, -75.703481,-0.946125]
+    top: [-10.550502, 7.280116, 0.522194, 40.97777, -17.538353, -56.464131, 4.499552]
+    bottom: [-10.479283, 24.739344, 2.549261, 35.950581, -11.447009, -80.488595, 0.879032]
+  vertical:
+    base: [0.006933, -16.103896, -3.455967, 76.674014, -2.190876, 92.318226, -4.615232]
+    top: [-0.704222, 25.698017, -0.602923, 123.750748, -2.101781, 95.509085, -6.941842]
+# Vial-bottom coordinates [x, y, z] in arm-base mm. Each public location
+# selects a taught entry pose per approach and the holder motion route.
+locations:
+  top:
+    xyz: [589.311768, -24.556887, 329.94397]
+    entries:
+      vertical: top
+    route: top
+  bottom:
+    xyz: [615.941162, -26.773834, 272.851471]
+    entries:
+      horizontal: bottom
+    route: bottom
+  front:
+    xyz: [584.503906, -31.249672, 286.278809]
+    entries:
+      horizontal: bottom
+    route: bottom

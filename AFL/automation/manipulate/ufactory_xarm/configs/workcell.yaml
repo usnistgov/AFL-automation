@@ -1,0 +1,36 @@
+# Robot-wide settings. Station coordinates use link_base at their rail stop.
+# All distances are in mm; linear speeds are in mm/s.
+
+arm:
+  # null leaves the speed to the SDK/controller.
+  speed_mm_s: null
+  joint_speed_deg_s: null
+
+gripper:
+  # Required model: xarm (original), xarm_g2, or bio (full open/close).
+  type: xarm
+  # Calibrated full jaw span and SDK pulse position for the original gripper.
+  # G2 uses native mm positions and supports a span of at most 84 mm.
+  span_mm: 84.40
+  span_sdk: 840
+  # xarm: r/min; null keeps the SDK/controller setting. G2: 15-225 mm/s,
+  # with null selecting the SDK default of 100 mm/s. BIO: 1-4000 pulse/s,
+  # with null selecting the SDK default of 2000 pulse/s.
+  speed: null
+  # xarm has no force control: must be null. G2: integer setting 1-100,
+  # with null selecting the SDK default of 50. Newer BIO: integer 10-100;
+  # null omits force and uses the BIO SDK default of 50.
+  force: null
+  # Total extra opening beyond the labware grasp width, capped at fully open.
+  open_clearance_mm: 8.0
+
+tool:
+  # New fingertips place the grasp point 10 mm farther along tool Z.
+  tcp_offset_mm: [0.0, 0.0, 0.0]
+
+rail:
+  # Physical travel limits for the installed AL1300 linear rail.
+  min_position_mm: 0.0
+  max_position_mm: 700.0
+  robot_position: 0.0
+  speed_mm_s: 100

@@ -193,40 +193,82 @@ anonymous `401` health checks.
 ## 6. Test on the NAS
 
 ```sh
-curl --fail --silent --show-error \
-  -H "Authorization: Apikey $(cat /volume1/docker/afl-tiled-secrets/tiled_api_key)" \
+{ printf 'Authorization: Apikey '; cat /volume1/docker/afl-tiled-secrets/tiled_api_key; printf '\n'; } |
+curl --fail --silent --show-error --header @- \
   http://NAS_IP:8000/api/v1/metadata/
 ```
 
-A JSON response confirms that Tiled and its API key are working.
+A JSON response confirms that Tiled and its API key are working. The header
+is passed through standard input so the key does not appear in curl's command
+line. Run the whole pipeline; do not run the header-producing command alone.
 
 ## 7. Copy the key and test from the allowed AFL computer
 
 Before testing authenticated access, copy the current API key from the NAS to
-the AFL computer. First prepare its destination on the AFL computer:
+the AFL computer. If the NAS container is already running and the firewall
+rules are in place, start here; do not generate a replacement service key.
+
+Name the copied key `nas_tiled_api_key` to distinguish it from any local Tiled
+server credential. First prepare its destination on the AFL computer:
 
 ```sh
+umask 077
 mkdir -p ~/.afl
 chmod 0700 ~/.afl
 ```
 
-Then, from an administrative shell on the NAS, copy the key using the AFL
-computer's SSH username and fixed IP:
+If the NAS SSH account can read the secret directly, pull it from the AFL
+computer:
 
 ```sh
-scp /volume1/docker/afl-tiled-secrets/tiled_api_key \
-  AFL_USERNAME@AFL_COMPUTER_IP:.afl/tiled_api_key
+scp NAS_USERNAME@NAS_IP:/volume1/docker/afl-tiled-secrets/tiled_api_key \
+  ~/.afl/nas_tiled_api_key
 ```
 
-Enter the AFL computer account password when prompted. Back on the AFL
-computer, restrict the copied file:
+If that reports `Permission denied`, the service-owned key needs an
+administrative read. From the AFL computer, open a NAS shell:
 
 ```sh
-chmod 0600 ~/.afl/tiled_api_key
+ssh NAS_USERNAME@NAS_IP
 ```
 
-Never paste the key into the terminal command itself or into documentation.
-Repeat this copy whenever the NAS key is rotated.
+In that NAS shell, create a private temporary copy without printing its
+contents. Enter the NAS account password at the `sudo` prompt:
+
+```sh
+nas_key_copy=$(mktemp /tmp/nas-tiled-key.XXXXXX)
+sudo cat /volume1/docker/afl-tiled-secrets/tiled_api_key > "$nas_key_copy"
+printf '%s\n' "$nas_key_copy"
+```
+
+Continue only if `sudo cat` succeeds. Record the printed temporary path, then
+run `exit` to return to the AFL computer. Set `nas_key_copy` to that exact path
+and copy it:
+
+```sh
+nas_key_copy=/tmp/nas-tiled-key.REPLACE_WITH_PRINTED_SUFFIX
+scp "NAS_USERNAME@NAS_IP:$nas_key_copy" ~/.afl/nas_tiled_api_key
+chmod 0600 ~/.afl/nas_tiled_api_key
+test -s ~/.afl/nas_tiled_api_key && echo 'NAS key file copied'
+```
+
+After a successful copy, remove only the temporary NAS file:
+
+```sh
+ssh NAS_USERNAME@NAS_IP "rm -- '$nas_key_copy'"
+```
+
+Synology may print `Could not chdir to home directory ...: Permission denied`
+when the SSH account cannot enter its DSM home directory. A transfer showing
+`100%` can still succeed: the temporary source is under `/tmp` and does not
+need that home directory. Confirm that the local key file is non-empty using
+the check above.
+
+For either copy method, make sure the local file has mode `0600`. Never paste
+the key into a terminal command, documentation, or chat. Repeat this copy
+whenever the NAS key is rotated. Keep the copied key under `~/.afl` and the
+client profiles in a private configuration directory as described below.
+Keep deployment-specific addresses in the ignored NAS `.env` file.
 
 Now verify the port:
 
@@ -237,8 +279,8 @@ nc -vz -w 5 NAS_IP 8000
 Then authenticate using the copied key:
 
 ```sh
-curl --fail --silent --show-error \
-  -H "Authorization: Apikey $(cat ~/.afl/tiled_api_key)" \
+{ printf 'Authorization: Apikey '; cat ~/.afl/nas_tiled_api_key; printf '\n'; } |
+curl --fail --silent --show-error --header @- \
   http://NAS_IP:8000/api/v1/metadata/
 ```
 
@@ -252,8 +294,72 @@ JSON confirms the network and credential both work. Interpret failures as:
 
 ## 8. Connect AFL
 
-Set these fields in the newest entry of `~/.afl/config.json` on each AFL server
-that reads or writes data:
+Keep separate Andon launcher cards for the local server and the NAS. On the
+AFL computer, use the installation's `knv2/afl-configs` directory for both
+profiles:
+
+| Launcher card | Profile | Management |
+|---|---|---|
+| Existing local `tiled` card | `knv2/afl-configs/tiled_local.yml` | Local Screen session |
+| New `Tiled NAS` card | `knv2/afl-configs/tiled_nas.yml` | NAS Docker Compose over SSH |
+
+Set **Server type** to **Tiled** on both cards, and set each card's **Config
+file location** to the absolute path of its own profile. Keep the existing
+local card's host, Python environment, port, and Screen session name. Give the
+NAS card a distinct name and use the NAS SSH account and HTTP port `8000`.
+
+Create `tiled_local.yml` by copying the existing local server YAML, including
+its `authentication`, `uvicorn`, and `trees` sections. Andon starts local Tiled
+from the profile's directory, so convert relative catalog and storage paths
+to absolute paths pointing to the existing dataset before moving the profile.
+For example, replace `catalog.db` with
+`sqlite+aiosqlite:////path/to/existing/local-tiled/catalog.db` and `data/` with
+`/path/to/existing/local-tiled/data/`. Moving the YAML must not create a new
+catalog or move the data.
+
+The NAS profile is a client profile with no `trees` section:
+
+```yaml
+uri: "http://NAS_IP:8000"
+api_key: "REPLACE_WITH_THE_CONTENTS_OF_NAS_TILED_API_KEY"
+structure_clients: "dask"
+catalog_path: "run_documents"
+management:
+  type: "docker_compose"
+  authentication: "password"
+  host: "NAS_IP"
+  username: "NAS_USERNAME"
+  project_directory: "/volume1/docker/afl-tiled-project"
+  service: "tiled"
+  join_shell: "/bin/sh"
+```
+
+Populate `api_key` from `~/.afl/nas_tiled_api_key` without printing it. Confirm
+that `project_directory` matches the existing NAS Compose project. Andon
+prompts for the SSH password when the NAS card is started and keeps it only
+in process memory. Its Start action leaves an already-running container in
+place; Stop disconnects Andon from the NAS service.
+
+These profiles contain credentials and installation addresses. Keep them
+outside Git, set mode `0600`, and add `/tiled_local.yml` and `/tiled_nas.yml`
+to the configuration directory's `.gitignore` if that directory may later be
+version-controlled:
+
+```sh
+chmod 0600 /ABSOLUTE_KNV2_PATH/afl-configs/tiled_local.yml
+chmod 0600 /ABSOLUTE_KNV2_PATH/afl-configs/tiled_nas.yml
+```
+
+Reload the Andon board after changing its launcher definitions. Starting a
+Tiled card selects that backend for AFL: Andon updates the latest global
+configuration with the selected profile's URL and key. Start the desired
+Tiled card before launching drivers that read or write data. Restart any
+already-running AFL drivers when switching backends, after their queues are
+idle. Their existing `DataTiled` connections do not change just because the
+configuration file was edited.
+
+For AFL servers launched outside Andon, set these fields in the newest entry
+of `~/.afl/config.json`, using the selected profile's URL and key:
 
 ```json
 {
@@ -268,17 +374,14 @@ Protect the file and restart the AFL services:
 chmod 0600 ~/.afl/config.json
 ```
 
-For Andon, select the external Tiled YAML profile. Its connection fields are:
+Preserve unrelated settings and configuration history when updating this
+file. AFL selects the newest entry by decoding its timestamp; the timestamp
+keys are not in lexicographic date order. Back up the existing file with mode
+`0600` before editing it.
 
-```yaml
-uri: "http://NAS_IP:8000"
-api_key: "REPLACE_WITH_THE_CURRENT_SERVICE_KEY"
-structure_clients: "dask"
-```
-
-Because this YAML contains the service key, keep it out of Git and set mode
-`0600`. The profile may also contain Andon's `management` section for remote
-Docker Compose lifecycle controls.
+After connecting, verify that the AFL driver environment can write and read
+a small, uniquely identified test dataset under `run_documents`. Check the
+returned data and remove only that test entry when verification succeeds.
 
 If Tiled is unreachable during an AFL write, `DataTiled` writes a JSON fallback
 under `~/.afl/json-backup` on that AFL host. These files are not automatically

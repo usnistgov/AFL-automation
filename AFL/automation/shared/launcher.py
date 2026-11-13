@@ -73,20 +73,6 @@ except (AttributeError,NameError):
 if 'AFL_SYSTEM_SERIAL' not in os.environ.keys():
         os.environ['AFL_SYSTEM_SERIAL'] = AFL_GLOBAL_CONFIG['system_serial']
 
-if 'AFL_HTTP_PORT' in os.environ:
-        try:
-                server_port = int(os.environ['AFL_HTTP_PORT'])
-        except ValueError as exc:
-                raise ValueError('AFL_HTTP_PORT must be an integer between 1 and 65535') from exc
-        if not 1 <= server_port <= 65535:
-                raise ValueError('AFL_HTTP_PORT must be an integer between 1 and 65535')
-        print(f'Using launch HTTP port {server_port}')
-elif main_module_name in AFL_GLOBAL_CONFIG['ports'].keys():
-        server_port = AFL_GLOBAL_CONFIG['ports'][main_module_name]
-        print(f'Found configured non-default port {server_port}, starting there')
-else:
-        server_port=5000
-
 if main_module_name in AFL_GLOBAL_CONFIG.get('ca_status_ports', {}):
         ca_status_port = AFL_GLOBAL_CONFIG['ca_status_ports'][main_module_name]
 else:
@@ -158,16 +144,45 @@ def _reconstitute_objects(obj_dict,data=None):
 '''
 
 
+def _valid_port(value):
+        try:
+                port = int(value)
+        except (TypeError, ValueError):
+                raise argparse.ArgumentTypeError('port must be an integer')
+        if not 1 <= port <= 65535:
+                raise argparse.ArgumentTypeError('port must be between 1 and 65535')
+        return port
+
+
 parser = argparse.ArgumentParser(prog = f'AFL // {main_module_name}',
                                 description = f'AFL APIServer launcher for {main_module_name}')
 parser.add_argument('--no-waitress', action='store_true',
                     help='Disable the waitress WSGI server')
 parser.add_argument('--config', type=Path, metavar='CONFIG.json',
                     help='Launch using this JSON driver configuration instead of defaults')
+parser.add_argument('--port', type=_valid_port,
+                    help='HTTP port for the AFL API server; overrides the global configuration')
 
 parser.add_argument('-i', '--interactive', action='store_true',
                     help='Start in interactive mode')
 args = parser.parse_args()
+
+if args.port is not None:
+        server_port = args.port
+        print(f'Using command-line port {server_port}')
+elif 'AFL_HTTP_PORT' in os.environ:
+        try:
+                server_port = int(os.environ['AFL_HTTP_PORT'])
+        except ValueError as exc:
+                raise ValueError('AFL_HTTP_PORT must be an integer between 1 and 65535') from exc
+        if not 1 <= server_port <= 65535:
+                raise ValueError('AFL_HTTP_PORT must be an integer between 1 and 65535')
+        print(f'Using launch HTTP port {server_port}')
+elif main_module_name in AFL_GLOBAL_CONFIG['ports'].keys():
+        server_port = AFL_GLOBAL_CONFIG['ports'][main_module_name]
+        print(f'Found configured non-default port {server_port}, starting there')
+else:
+        server_port = 5000
 
 # Driver construction must not inherit values from an earlier run.  This is
 # consumed by Driver and applies to every Driver created by a custom config.

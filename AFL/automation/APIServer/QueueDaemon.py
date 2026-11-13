@@ -6,12 +6,11 @@ import datetime
 import os
 import sys
 import traceback
-import subprocess
 import json
-import pathlib
 import numpy as np
 import pandas as pd
 import xarray as xr
+from AFL.automation import __version__
 from AFL.automation.shared.serialization import is_serialized
 from AFL.automation.APIServer.data.DataTrashcan import DataTrashcan
 
@@ -47,16 +46,8 @@ class QueueDaemon(threading.Thread):
             self.data['platform_serial'] = os.environ['AFL_SYSTEM_SERIAL']
         except KeyError:
             self.data['platform_serial'] = 'not_set'
-        try:
-            # Andon launches from the SSH account's home, which need not be a
-            # Git checkout. Resolve the version from this package's repository.
-            repository = pathlib.Path(__file__).resolve().parents[3]
-            self.data['afl_automation_version'] = subprocess.check_output(
-                ["git", "describe", "--always"], cwd=repository,
-                stderr=subprocess.DEVNULL,
-            ).strip().decode()
-        except Exception:
-            self.data['afl_automation_version'] = 'could_not_determine'
+        # Package metadata also works outside the checkout and without Git.
+        self.data['afl_automation_version'] = __version__
 
 
     def terminate(self):
@@ -176,7 +167,12 @@ class QueueDaemon(threading.Thread):
             # so that DataTiled can store it as the main data element
 
             if isinstance(return_val, xr.Dataset):
+                # Preserve the dataset for Client.retrieve_obj(task_uuid) while
+                # DataTiled independently writes the queued result to Tiled.
+                return_val = return_val.copy()
+                return_val.attrs['uuid'] = str(masked_package['uuid'])
                 self.data['main_dataset'] = return_val
+                self.driver.deposit_obj(return_val, uid=str(masked_package['uuid']))
             elif type(return_val) is np.ndarray:
                 self.data['main_array'] = return_val
             elif type(return_val) is pd.DataFrame:

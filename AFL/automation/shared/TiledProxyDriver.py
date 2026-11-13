@@ -2,9 +2,10 @@
 
 import argparse
 import json
+import logging
 import signal
 from pathlib import Path
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 
 from AFL.automation.APIServer.Driver import Driver
 
@@ -149,12 +150,105 @@ class TiledProxyDriver(Driver):
         request_path = "/" + path.lstrip("/")
         if query:
             request_path += "?" + query.decode("ascii")
-        return self._http_client.request(
+        response = self._http_client.request(
             method,
             request_path,
             content=body,
             headers=forwarded_headers,
         )
+        if (method.upper() == "GET"
+                and request_path.split("?", 1)[0].startswith("/api/v1/distinct/")
+                and response.status_code in (405, 500, 501)):
+            logging.getLogger(__name__).warning(
+                "Tiled distinct returned HTTP %s; collecting values from metadata search",
+                response.status_code,
+            )
+            return self._distinct_from_search(path, query, forwarded_headers, response.request)
+        return response
+
+    def _distinct_from_search(self, path, query, headers, original_request):
+        """Recover native distinct results from every page of a filtered search."""
+        import httpx
+
+        params = parse_qsl(query.decode("ascii"), keep_blank_values=True)
+        fields = list(dict.fromkeys(value for key, value in params if key == "metadata"))
+        options = dict(params)
+
+        def enabled(name):
+            return options.get(name, "false").lower() in ("true", "1", "yes", "on")
+
+        counts = enabled("counts")
+        structure_families = enabled("structure_families")
+        specs = enabled("specs")
+        groups = {"metadata": {field: {} for field in fields}} if fields else {}
+        if structure_families:
+            groups["structure_families"] = {}
+        if specs:
+            groups["specs"] = {}
+
+        search_params = [
+            (key, value) for key, value in params
+            if key not in ("metadata", "counts", "structure_families", "specs", "fields")
+            and not key.startswith("page[")
+        ]
+        search_params.append(("page[limit]", "100"))
+        if fields:
+            search_params.append(("fields", "metadata"))
+        if structure_families:
+            search_params.append(("fields", "structure_family"))
+        if specs:
+            search_params.append(("fields", "specs"))
+        search_path = "/" + path.lstrip("/").replace("api/v1/distinct/", "api/v1/search/", 1)
+        next_url = search_path + "?" + urlencode(search_params)
+        visited = set()
+
+        def add(group, value):
+            # JSON keys retain the distinction between strings, numbers and
+            # booleans and also support list/dict metadata values.
+            key = json.dumps(value, sort_keys=True, ensure_ascii=False)
+            if key not in group:
+                group[key] = {"value": value, **({"count": 0} if counts else {})}
+            if counts:
+                group[key]["count"] += 1
+
+        while next_url:
+            url = self._http_client.base_url.join(next_url)
+            if url in visited:
+                raise ValueError("Tiled metadata search repeated a pagination link")
+            visited.add(url)
+            response = self._http_client.get(url, headers=headers)
+            if not response.is_success:
+                return response
+            payload = response.json()
+            for item in payload["data"]:
+                attributes = item.get("attributes", {})
+                metadata = attributes.get("metadata", {})
+                for field in fields:
+                    value = metadata
+                    for segment in field.split("."):
+                        value = value.get(segment) if isinstance(value, dict) else None
+                    add(groups["metadata"][field], value)
+                if structure_families:
+                    add(groups["structure_families"], attributes.get("structure_family"))
+                if specs:
+                    add(groups["specs"], attributes.get("specs", []))
+
+            next_url = payload.get("links", {}).get("next")
+            if next_url:
+                resolved = urlsplit(urljoin(str(url), next_url))
+                upstream = urlsplit(str(self._http_client.base_url))
+                if ((resolved.scheme, resolved.netloc) != (upstream.scheme, upstream.netloc)
+                        or resolved.path != search_path):
+                    raise ValueError("Tiled metadata search returned an unexpected pagination link")
+                next_url = urlunsplit(("", "", resolved.path, resolved.query, ""))
+
+        result = {}
+        if fields:
+            result["metadata"] = {field: list(values.values()) for field, values in groups["metadata"].items()}
+        for name in ("structure_families", "specs"):
+            if name in groups:
+                result[name] = list(groups[name].values())
+        return httpx.Response(200, json=result, request=original_request)
 
 
 def rewrite_links(value, upstream, local):

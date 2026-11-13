@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gamry Panel</title>
+    <style>{{ inline_css }}</style>
+</head>
+<body>
+    <main class="panel-shell">
+        <section class="hero-card">
+            <div>
+                <p class="eyebrow">AFL Gamry</p>
+                <h1>Remote Front Panel</h1>
+                <p class="lede">Browser-native control for the existing Gamry AFL driver. This panel covers service control, diagnostics, CV, chronoamperometry, sine, and differential pulse voltammetry with completed-run plotting.</p>
+            </div>
+            <div class="status-cluster">
+                <div class="status-pill" id="bridge-status">Unknown</div>
+                <div class="status-meta" id="bridge-endpoint">Endpoint unavailable</div>
+            </div>
+        </section>
+
+        <section class="grid-layout">
+            <article class="card">
+                <div class="card-header">
+                    <h2>Service</h2>
+                    <button id="refresh-state" type="button">Refresh</button>
+                </div>
+                <div class="button-row">
+                    <button id="start-service" type="button">Start Bridge</button>
+                    <button id="connect-instrument" type="button" class="accent">Connect Instrument</button>
+                    <button id="stop-service" type="button" class="secondary">Stop Bridge</button>
+                    <button id="list-instruments" type="button" class="secondary">List Instruments</button>
+                    <button id="validate-connection" type="button" class="secondary">Validate</button>
+                    <button id="diagnose-connection" type="button" class="secondary">Diagnose</button>
+                </div>
+                <label>Detected Instruments<select id="instrument-select" name="instrument_select"></select></label>
+                <pre id="service-output" class="output-box">No actions yet.</pre>
+            </article>
+
+            <article class="card">
+                <div class="card-header">
+                    <h2>Measurement</h2>
+                    <button id="save-config" type="button">Save Defaults</button>
+                </div>
+                <form id="cv-form" class="form-grid">
+                    <label>Instrument Name<input name="instrument_name" type="text"></label>
+                    <label>Measurement Mode
+                        <select name="measurement_mode" id="measurement-mode">
+                            <option value="cv">Cyclic Voltammetry</option>
+                            <option value="ca">Chronoamperometry</option>
+                            <option value="sine">Sine + DC Offset</option>
+                            <option value="dpv">Differential Pulse Voltammetry</option>
+                        </select>
+                    </label>
+                    <label>Current Range Mode<input name="current_range_mode" type="text"></label>
+
+                    <div class="mode-section" data-mode="cv">
+                        <label>Initial Voltage (V)<input name="initial_voltage" type="number" step="any"></label>
+                        <label>Apex 1 Voltage (V)<input name="apex1_voltage" type="number" step="any"></label>
+                        <label>Apex 2 Voltage (V)<input name="apex2_voltage" type="number" step="any"></label>
+                        <label>Final Voltage (V)<input name="final_voltage" type="number" step="any"></label>
+                        <label>Apex 1 Hold (s)<input name="apex1_hold" type="number" step="any"></label>
+                        <label>Apex 2 Hold (s)<input name="apex2_hold" type="number" step="any"></label>
+                        <label>Final Hold (s)<input name="final_hold" type="number" step="any"></label>
+                        <label>Scan Rate (V/s)<input name="scan_rate" type="number" step="any"></label>
+                        <label>Step Size (V)<input name="step_size" type="number" step="any"></label>
+                        <label>Cycles (count)<input name="cycles" type="number" step="1"></label>
+                        <label>Scan Delay (s)<input name="scan_delay" type="number" step="any"></label>
+                    </div>
+
+                    <div class="mode-section" data-mode="ca">
+                        <label>Initial Voltage (V)<input name="ca_initial_voltage" type="number" step="any"></label>
+                        <label>Step 1 Voltage (V)<input name="ca_step1_voltage" type="number" step="any"></label>
+                        <label>Step 2 Voltage (V)<input name="ca_step2_voltage" type="number" step="any"></label>
+                        <label>Initial Time (s)<input name="ca_initial_time" type="number" step="any"></label>
+                        <label>Step 1 Time (s)<input name="ca_step1_time" type="number" step="any"></label>
+                        <label>Step 2 Time (s)<input name="ca_step2_time" type="number" step="any"></label>
+                        <label>Sample Time (s)<input name="ca_sample_time" type="number" step="any"></label>
+                        <label>Expected Max Voltage (V)<input name="ca_expected_max_v" type="number" step="any"></label>
+                    </div>
+
+                    <div class="mode-section" data-mode="sine">
+                        <label>DC Offset (V)<input name="sine_dc_offset" type="number" step="any"></label>
+                        <label>Amplitude (V)<input name="sine_amplitude" type="number" step="any"></label>
+                        <label>Signal Frequency (Hz)<input name="sine_frequency" type="number" step="any"></label>
+                        <label>Acquisition Frequency (Hz)<input name="sine_acq_frequency" type="number" step="any"></label>
+                        <label>Total Time (s)<input name="sine_total_time" type="number" step="any"></label>
+                        <label>Phase Offset (rad)<input name="sine_phase_offset" type="number" step="any"></label>
+                    </div>
+
+                    <div class="mode-section" data-mode="dpv">
+                        <label>Initial E (V)<input name="dpv_initial_voltage" type="number" step="any"></label>
+                        <label>Final E (V)<input name="dpv_final_voltage" type="number" step="any"></label>
+                        <label>Step Size (V)<input name="dpv_step_size" type="number" step="any"></label>
+                        <label>Pulse Size E (V)<input name="dpv_pulse_size" type="number" step="any"></label>
+                        <label>Sample Period (s)<input name="dpv_sample_period" type="number" step="any"></label>
+                        <label>Pulse Time (s)<input name="dpv_pulse_time" type="number" step="any"></label>
+                        <label>Noise Rejection<input name="dpv_noise_rejection" type="checkbox"></label>
+                        <label>I/E Range Mode
+                            <select name="dpv_irange_mode">
+                                <option value="auto">Auto</option>
+                                <option value="fixed">Fixed</option>
+                            </select>
+                        </label>
+                        <label>Max Current (A)<input name="dpv_max_current" type="number" step="any"></label>
+                    </div>
+                </form>
+                <div class="button-row">
+                    <button id="run-measurement" type="button" class="accent">Run Measurement</button>
+                </div>
+            </article>
+
+            <article class="card wide-card">
+                <div class="card-header">
+                    <h2>Result</h2>
+                    <div id="result-summary" class="muted">No run yet.</div>
+                </div>
+                <div id="result-source" class="muted">Source file: none</div>
+                <canvas id="cv-plot" width="960" height="360"></canvas>
+                <canvas id="voltage-time-plot" width="960" height="240"></canvas>
+                <pre id="result-output" class="output-box">No result yet.</pre>
+            </article>
+        </section>
+    </main>
+    <script>{{ inline_js }}</script>
+</body>
+</html>

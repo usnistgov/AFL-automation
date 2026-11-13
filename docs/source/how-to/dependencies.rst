@@ -61,6 +61,9 @@ Hardware Interfaces
    * - ``opentrons``
      - opentrons
      - Support for Opentrons liquid handling robots
+   * - ``ufactory``
+     - xarm-python-sdk, opentrons, PyYAML
+     - Support for the station-based UFactory xArm driver
    * - ``pyspec``
      - certif-pyspec
      - Support for CHESS and other beamline control

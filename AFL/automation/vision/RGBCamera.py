@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 import pathlib
 import sys
@@ -9,10 +10,10 @@ import numpy as np
 import xarray as xr
 
 from AFL.automation.APIServer.Driver import Driver
-from AFL.automation.shared.samplecells import NeutronSampleCell
+from AFL.automation.shared.samplecells import NeutronSampleCell, SampleCell
 
 
-class RGBCamera(NeutronSampleCell, Driver):
+class RGBCamera(Driver):
     """
     Driver for capturing RGB images and computing average RGB values.
     
@@ -23,18 +24,20 @@ class RGBCamera(NeutronSampleCell, Driver):
     defaults = {
         "camera_index": 0,
         "save_path": "/home/afl642/rgb_images/",
-        "px_crop": [220, 350],
-        "py_crop": [120, 250],
-        "hough_radii": 40,
         "subtract_background": True,
         "show_background_pipeline": False,
         "background_threshold": 25,
         "background_capture_on_init": True,
         "background": "background.npz",
-        "camera_warmup_delay": 0.2,
+        "camera_warmup_delay": 2.0,
+        "camera_properties": {
+            "CAP_PROP_BUFFERSIZE": 1,
+            "CAP_PROP_AUTOFOCUS": 1,
+            "CAP_PROP_AUTO_EXPOSURE": 0.75,
+        },
     }
 
-    def __init__(self, overrides=None):
+    def __init__(self, overrides=None, sample_cell=None):
         """
         Initialize RGBCamera driver.
 
@@ -42,7 +45,17 @@ class RGBCamera(NeutronSampleCell, Driver):
         ----------
         overrides : dict, optional
             Configuration overrides for PersistentConfig.
+        sample_cell : SampleCell, optional
+            Geometry and image-processing strategy. Defaults to a neutron
+            sample cell configured for the legacy RGB-camera crop.
         """
+        if sample_cell is None:
+            sample_cell = NeutronSampleCell(
+                row_crop=[120, 250], col_crop=[220, 350], hough_radii=40
+            )
+        if not isinstance(sample_cell, SampleCell):
+            raise TypeError("sample_cell must be an instance of SampleCell")
+        self.sample_cell = sample_cell
         self._opencv_capture = None
         # ``bkg`` is deliberately a locator, never an image array.  A
         # background captured without Tiled is stored under AFL_HOME; after a
@@ -116,18 +129,26 @@ class RGBCamera(NeutronSampleCell, Driver):
         if "camera_index" not in self.config:
             raise ValueError("camera_index must be set in config when camera_interface='opencv'")
 
-        camera_index = self.config["camera_index"]
         if self._opencv_capture is None or not self._opencv_capture.isOpened():
             self.open()
 
         return self._opencv_capture.read()
+
+    def _camera_source(self):
+        """Return an OpenCV source, coercing serialized numeric indices to ints."""
+        source = self.config.get("camera_index", 0)
+        if isinstance(source, str):
+            stripped = source.strip()
+            if stripped.lstrip("+-").isdigit():
+                return int(stripped)
+        return source
 
     @Driver.queued()
     def open(self):
         """Open the configured OpenCV camera and retain its capture handle."""
         if self._opencv_capture is not None and self._opencv_capture.isOpened():
             return {
-                "camera_index": self.config.get("camera_index", 0),
+                "camera_index": self._camera_source(),
                 "opened": True,
             }
         self.close()
@@ -138,26 +159,91 @@ class RGBCamera(NeutronSampleCell, Driver):
                 "opencv-python is required for camera_interface='opencv'. "
                 f"Install with: pip install AFL-automation[vision]. Error: {exc}"
             )
-        camera_index = self.config.get("camera_index", 0)
+        camera_index = self._camera_source()
         self._opencv_capture = cv2_module.VideoCapture(camera_index)
+        self._configure_camera_properties(cv2_module)
         return {
             "camera_index": camera_index,
             "opened": bool(self._opencv_capture.isOpened()),
         }
 
+    def _configure_camera_properties(self, cv2_module):
+        """Apply configured OpenCV capture properties when the backend supports them."""
+        if self._opencv_capture is None or not self._opencv_capture.isOpened():
+            return
+
+        for property_name, value in self.config.get("camera_properties", {}).items():
+            if isinstance(property_name, str):
+                property_id = getattr(cv2_module, property_name, None)
+                if property_id is None:
+                    self.log_warning(f"Unknown OpenCV camera property {property_name!r}; ignoring it.")
+                    continue
+            else:
+                property_id = property_name
+            if not self._opencv_capture.set(property_id, value):
+                self.log_warning(
+                    f"Camera backend rejected {property_name}={value}; continuing with its current value."
+                )
+
     def _save_local_background(self, background, mask, metadata):
         """Persist a background reference beneath ``AFL_HOME/RGBCamera``."""
         self._background_path.parent.mkdir(parents=True, exist_ok=True)
-        np.savez_compressed(
-            self._background_path,
-            background=np.asarray(background),
-            mask=np.asarray(mask, dtype=bool),
-            cx=metadata["cx"],
-            cy=metadata["cy"],
-            radius=metadata["radius"],
-        )
+        payload = {
+            "background": np.asarray(background),
+            "mask": np.asarray(mask, dtype=bool),
+            "metadata": np.asarray(json.dumps(metadata)),
+        }
+        # Retain these fields so newly written circular backgrounds remain
+        # readable by older RGBCamera versions.
+        for key in ("cx", "cy", "radius"):
+            if key in metadata:
+                payload[key] = metadata[key]
+        np.savez_compressed(self._background_path, **payload)
         self.bkg = str(self._background_path)
         self.config["background"] = self.bkg
+
+    @staticmethod
+    def _geometry_metadata(processed):
+        """Extract JSON-safe geometry metadata supplied by a sample cell."""
+        excluded = {"cropped_img", "gray_img", "image", "mask", "avg_rgb"}
+
+        def json_safe(value):
+            if isinstance(value, np.ndarray):
+                return value.tolist()
+            if isinstance(value, np.generic):
+                return value.item()
+            if isinstance(value, dict):
+                return {str(key): json_safe(item) for key, item in value.items()}
+            if isinstance(value, (list, tuple)):
+                return [json_safe(item) for item in value]
+            return value
+
+        metadata = {}
+        for key, value in processed.items():
+            if key in excluded:
+                continue
+            value = json_safe(value)
+            try:
+                json.dumps(value)
+            except (TypeError, ValueError):
+                continue
+            metadata[key] = value
+        return metadata
+
+    @staticmethod
+    def _add_geometry_attrs(attrs, metadata):
+        """Add available geometry fields to dataset attributes."""
+        if metadata:
+            attrs["sample_geometry_metadata"] = json.dumps(metadata)
+        if "geometry" in metadata:
+            attrs["sample_geometry"] = metadata["geometry"]
+        if "cx" in metadata and "cy" in metadata:
+            attrs["located_center"] = [metadata["cx"], metadata["cy"]]
+        if "radius" in metadata:
+            attrs["mask_radius"] = metadata["radius"]
+        for key in ("body_bbox", "cap_height", "row_crop", "col_crop"):
+            if key in metadata:
+                attrs[key] = metadata[key]
 
     def _load_background(self):
         """Load the background and ROI mask addressed by ``self.bkg``."""
@@ -170,14 +256,20 @@ class RGBCamera(NeutronSampleCell, Driver):
             if not background_path.is_file():
                 raise ValueError(f"Local RGB background does not exist at {background_path}.")
             with np.load(background_path) as background_data:
+                if "metadata" in background_data:
+                    metadata = json.loads(str(background_data["metadata"].item()))
+                else:
+                    # Compatibility with circular backgrounds written before
+                    # sample-cell-agnostic metadata was introduced.
+                    metadata = {
+                        key: int(background_data[key])
+                        for key in ("cx", "cy", "radius")
+                        if key in background_data
+                    }
                 result = {
                     "background": np.array(background_data["background"], copy=True),
                     "mask": np.array(background_data["mask"], dtype=bool, copy=True),
-                    "meta": {
-                        "cx": int(background_data["cx"]),
-                        "cy": int(background_data["cy"]),
-                        "radius": int(background_data["radius"]),
-                    },
+                    "meta": metadata,
                 }
         else:
             tiled_client = getattr(getattr(self, "data", None), "tiled_client", None)
@@ -215,7 +307,7 @@ class RGBCamera(NeutronSampleCell, Driver):
 
     def _capture_processed_frame(self, **kwargs):
         """
-        Capture an image and apply the standard crop/circle processing pipeline.
+        Capture an image and apply the configured sample-cell processing pipeline.
 
         Returns
         -------
@@ -223,15 +315,9 @@ class RGBCamera(NeutronSampleCell, Driver):
             `(img, processed)` where `img` is the raw BGR frame and `processed`
             is the payload returned by `_process_image`.
         """
-        px_crop = self.config["px_crop"]
-        py_crop = self.config["py_crop"]
-        hough_radii = self.config["hough_radii"]
-        warmup_delay = self.config.get("camera_warmup_delay", 0.2)
+        warmup_delay = self.config.get("camera_warmup_delay", 2.0)
 
-        self.log_info(
-            "Capturing RGB image with circular ROI detection "
-            f"(px_crop={px_crop}, py_crop={py_crop}, hough_radii={hough_radii})."
-        )
+        self.log_info(f"Capturing RGB image using {type(self.sample_cell).__name__} geometry.")
         self.log_debug("Attempting to collect camera image.")
 
         # A number of still-image camera backends acquire only when the
@@ -240,16 +326,14 @@ class RGBCamera(NeutronSampleCell, Driver):
         # Resetting it here makes every capture_rgb invocation initiate a new
         # hardware acquisition.
         self._reset_camera()
-        time.sleep(warmup_delay)
-        collected, img = self._collect_image(**kwargs)
+        collected, img = self._collect_warmed_image(warmup_delay, **kwargs)
 
         if collected:
             self.log_debug("Successfully collected camera image.")
         else:
             self._reset_camera()
             self.log_warning("Initial camera capture failed; resetting camera connection and retrying.")
-            time.sleep(warmup_delay)
-            collected, img = self._collect_image(**kwargs)
+            collected, img = self._collect_warmed_image(warmup_delay, **kwargs)
             if collected:
                 self.log_info("Camera capture succeeded on retry.")
             else:
@@ -262,7 +346,38 @@ class RGBCamera(NeutronSampleCell, Driver):
         processed = self._process_image(img)
         return img, processed
 
-    def _log_rgb_measurement(self, avg_rgb, *, subtract_background, radius, changed_pixel_count=None):
+    def _collect_warmed_image(self, warmup_delay, **kwargs):
+        """Drain frames during warmup and return the newest successful frame."""
+        warmup_delay = max(float(warmup_delay), 0.0)
+        deadline = time.monotonic() + warmup_delay
+        collected = False
+        img = None
+        frames_read = 0
+
+        # Reading continuously is intentional: many OpenCV/V4L2 backends do
+        # not start streaming until the first read, and sleeping after open()
+        # otherwise returns an early buffered frame before AF/AE has settled.
+        while True:
+            frame_collected, frame = self._collect_image(**kwargs)
+            frames_read += 1
+            if frame_collected:
+                collected, img = True, frame
+            if time.monotonic() >= deadline:
+                break
+            if not frame_collected:
+                time.sleep(min(0.05, max(deadline - time.monotonic(), 0.0)))
+
+        self.log_debug(f"Camera warmup consumed {frames_read} frames; using the newest frame.")
+        return collected, img
+
+    def _log_rgb_measurement(
+        self,
+        avg_rgb,
+        *,
+        subtract_background,
+        mask_pixel_count,
+        changed_pixel_count=None,
+    ):
         """
         Emit a concise log message describing how RGB values were obtained.
         """
@@ -270,20 +385,21 @@ class RGBCamera(NeutronSampleCell, Driver):
             threshold = self.config.get("background_threshold", 25)
             self.log_info(
                 "Computed RGB using background-subtracted foreground extraction "
-                f"inside the circular ROI (radius={radius}, threshold={threshold}, "
+                f"inside the {type(self.sample_cell).__name__} mask "
+                f"(mask_pixels={mask_pixel_count}, threshold={threshold}, "
                 f"changed_pixels={changed_pixel_count}). "
                 f"RGB=({avg_rgb['R']:.2f}, {avg_rgb['G']:.2f}, {avg_rgb['B']:.2f})."
             )
         else:
             self.log_info(
-                "Computed RGB using direct circular ROI averaging "
-                f"(radius={radius}). "
+                f"Computed RGB using direct {type(self.sample_cell).__name__} mask averaging "
+                f"(mask_pixels={mask_pixel_count}). "
                 f"RGB=({avg_rgb['R']:.2f}, {avg_rgb['G']:.2f}, {avg_rgb['B']:.2f})."
             )
 
     def _process_image(self, img, px_crop=None, py_crop=None, hough_radii=None):
         """
-        Crop the image, locate the circular sample region, and compute masked RGB averages.
+        Apply sample-cell geometry and compute masked RGB averages.
 
         Parameters
         ----------
@@ -291,29 +407,27 @@ class RGBCamera(NeutronSampleCell, Driver):
             Input image in BGR format (from OpenCV).
         px_crop : list, optional
             Pixel range [start, end] for cropping along the x-axis. Defaults to
-            the driver's ``px_crop`` configuration.
+            the sample cell's configured column crop.
         py_crop : list, optional
             Pixel range [start, end] for cropping along the y-axis. Defaults to
-            the driver's ``py_crop`` configuration.
+            the sample cell's configured row crop.
         hough_radii : int or list, optional
-            Radius or radii to use for Hough circle detection.
+            Optional circle-detection override for sample cells that support it.
 
         Returns
         -------
         dict
-            Processed image payload including cropped image, mask, center, radius,
-            and average RGB values computed inside the mask.
+            Sample-cell payload plus average RGB values computed inside its mask.
         """
-        px_crop = self.config["px_crop"] if px_crop is None else px_crop
-        py_crop = self.config["py_crop"] if py_crop is None else py_crop
-        sample = self.extract_sample_image(
-            img,
-            row_crop=py_crop,
-            col_crop=px_crop,
-            hough_radii=hough_radii,
-            color_order="BGR",
-        )
-        sample["avg_rgb"] = self.rgb_values(
+        cell_overrides = {"color_order": "BGR"}
+        if px_crop is not None:
+            cell_overrides["col_crop"] = px_crop
+        if py_crop is not None:
+            cell_overrides["row_crop"] = py_crop
+        if hough_radii is not None:
+            cell_overrides["hough_radii"] = hough_radii
+        sample = self.sample_cell.extract_sample_image(img, **cell_overrides)
+        sample["avg_rgb"] = self.sample_cell.rgb_values(
             sample["cropped_img"], sample["mask"], color_order="BGR"
         )
         return sample
@@ -333,7 +447,7 @@ class RGBCamera(NeutronSampleCell, Driver):
         threshold : float, optional
             Difference threshold used to define the foreground mask.
         roi_mask : np.ndarray, optional
-            Boolean mask restricting subtraction to the circular sample region.
+            Boolean mask restricting subtraction to the sample-cell region.
 
         Returns
         -------
@@ -395,7 +509,7 @@ class RGBCamera(NeutronSampleCell, Driver):
         # zero-valued foreground measurement instead of passing an empty mask
         # to rgb_values(), which would abort the queued capture.
         if changed_pixel_count:
-            avg_rgb = self.rgb_values(extracted, mask, color_order="BGR")
+            avg_rgb = self.sample_cell.rgb_values(extracted, mask, color_order="BGR")
         else:
             avg_rgb = {"R": 0.0, "G": 0.0, "B": 0.0}
 
@@ -454,24 +568,20 @@ class RGBCamera(NeutronSampleCell, Driver):
             processed["cropped_img"],
             0,
         )
-        self._background_meta = {
-            "cx": processed["cx"],
-            "cy": processed["cy"],
-            "radius": processed["radius"],
-            "shape": processed["cropped_img"].shape,
-        }
+        self._background_meta = self._geometry_metadata(processed)
         self._save_local_background(masked_background, processed["mask"], self._background_meta)
         self.log_info(
-            "Stored new background reference for RGB subtraction "
-            f"(center=({processed['cx']}, {processed['cy']}), radius={processed['radius']})."
+            "Stored new background reference for RGB subtraction using the "
+            f"{type(self.sample_cell).__name__} mask "
+            f"({np.count_nonzero(processed['mask'])} pixels)."
         )
         dataset = xr.Dataset()
         dataset.attrs.update(
             mode="rgb_background",
             background_locator=str(self._background_path),
-            located_center=[processed["cx"], processed["cy"]],
-            mask_radius=processed["radius"],
+            sample_cell=type(self.sample_cell).__name__,
         )
+        self._add_geometry_attrs(dataset.attrs, self._background_meta)
         dataset["background_rgb"] = (
             ("height", "width", "rgb_channel"),
             masked_background[..., ::-1],
@@ -493,10 +603,11 @@ class RGBCamera(NeutronSampleCell, Driver):
         avg_rgb,
         measurement_img,
         mask,
-        cx,
-        cy,
-        radius,
         img_metadata,
+        geometry_metadata=None,
+        cx=None,
+        cy=None,
+        radius=None,
     ):
         """
         Build an xarray Dataset containing RGB measurements, an RGB image, mask, and metadata.
@@ -510,8 +621,17 @@ class RGBCamera(NeutronSampleCell, Driver):
         ds.attrs["image_height"] = img_metadata["height"]
         ds.attrs["image_width"] = img_metadata["width"]
         ds.attrs["camera_index"] = self.config.get("camera_index", 0)
-        ds.attrs["located_center"] = [cx, cy]
-        ds.attrs["mask_radius"] = radius
+        sample_cell = getattr(self, "sample_cell", None)
+        ds.attrs["sample_cell"] = (
+            type(sample_cell).__name__ if sample_cell is not None else "SampleCell"
+        )
+        if geometry_metadata is None:
+            geometry_metadata = {}
+            if cx is not None and cy is not None:
+                geometry_metadata.update(cx=cx, cy=cy)
+            if radius is not None:
+                geometry_metadata["radius"] = radius
+        self._add_geometry_attrs(ds.attrs, geometry_metadata)
         ds.attrs["background_subtracted"] = img_metadata.get("background_subtracted", False)
         ds.attrs["background_available"] = self.bkg is not None
         ds.attrs["background_threshold"] = img_metadata.get(
@@ -596,9 +716,15 @@ class RGBCamera(NeutronSampleCell, Driver):
             if self.bkg is None:
                 self.refresh_background(**kwargs)
             background = self._load_background()
-            roi_mask = processed["mask"]
-            if background["mask"].shape == processed["mask"].shape:
-                roi_mask = roi_mask & background["mask"]
+            roi_mask = np.asarray(processed["mask"], dtype=bool)
+            background_mask = np.asarray(background["mask"], dtype=bool)
+            if background_mask.shape != roi_mask.shape:
+                raise ValueError(
+                    "Stored background and current sample-cell masks must have the same shape. "
+                    f"Got {background_mask.shape} and {roi_mask.shape}. Refresh the background "
+                    "after changing sample-cell geometry."
+                )
+            roi_mask = roi_mask & background_mask
             background_processed = self._process_image_with_background(
                 background["background"],
                 np.where(processed["mask"][..., None], processed["cropped_img"], 0),
@@ -609,7 +735,7 @@ class RGBCamera(NeutronSampleCell, Driver):
         self._log_rgb_measurement(
             avg_rgb,
             subtract_background=subtract_background,
-            radius=processed["radius"],
+            mask_pixel_count=int(np.count_nonzero(processed["mask"])),
             changed_pixel_count=(
                 None if background_processed is None else background_processed["changed_pixel_count"]
             ),
@@ -628,20 +754,25 @@ class RGBCamera(NeutronSampleCell, Driver):
             avg_rgb=avg_rgb,
             measurement_img=processed["cropped_img"],
             mask=processed["mask"],
-            cx=processed["cx"],
-            cy=processed["cy"],
-            radius=processed["radius"],
             img_metadata=img_metadata,
+            geometry_metadata=self._geometry_metadata(processed),
         )
         if plotting:
             try:
                 save_path = pathlib.Path(self.config.get("save_path", "./"))
-                plot_file = self.save_geometry_plot(
+                save_path.mkdir(parents=True, exist_ok=True)
+                capture_timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+                cv2_module = lazy.load("cv2", require="AFL-automation[vision]")
+                raw_file = save_path / f"{capture_timestamp}-rgb-raw.png"
+                if not cv2_module.imwrite(str(raw_file), img):
+                    raise OSError(f"OpenCV could not write raw RGB capture to {raw_file}")
+                self.log_info(f"Saved raw RGB capture to {raw_file}.")
+                plot_file = self.sample_cell.save_geometry_plot(
                     img,
                     processed,
                     save_path=save_path,
-                    filename=f"{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}-rgb-capture.png",
-                    title="Detected neutron sample cell",
+                    filename=f"{capture_timestamp}-rgb-capture.png",
+                    title=f"Detected {type(self.sample_cell).__name__}",
                     color_order="BGR",
                     show_full_image_axes=True,
                     full_image_x_label="px",
@@ -658,18 +789,28 @@ class RGBCamera(NeutronSampleCell, Driver):
 
 _DEFAULT_CUSTOM_CONFIG = {
     "_classname": "AFL.automation.vision.RGBCamera.RGBCamera",
+    "sample_cell": {
+        "_classname": "AFL.automation.shared.samplecells.NeutronSampleCell",
+        "overrides": {
+            "row_crop": [120, 250],
+            "col_crop": [220, 350],
+            "hough_radii": 40,
+        },
+    },
     "overrides": {
         "camera_index": 0,
-        "px_crop": [220, 350],
-        "py_crop": [120, 250],
-        "hough_radii": 40,
         "save_path": "/home/afl642/rgb_camera/",
         "subtract_background": True,
         "show_background_pipeline": False,
         "background_threshold": 25,
         "background_capture_on_init": True,
         "background": "background.npz",
-        "camera_warmup_delay": 0.2,
+        "camera_warmup_delay": 2.0,
+        "camera_properties": {
+            "CAP_PROP_BUFFERSIZE": 1,
+            "CAP_PROP_AUTOFOCUS": 1,
+            "CAP_PROP_AUTO_EXPOSURE": 0.75,
+        },
     }
 }
 _DEFAULT_CUSTOM_PORT = 5095

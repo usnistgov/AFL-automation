@@ -243,7 +243,7 @@ class Server {
     executeQuickbarTask(task) { 
 
       var address = this.address + 'enqueue';
-      var params = $(`.${task.replaceAll(' ','_').toLowerCase()}_params`).toArray()
+      var params = $(`#${this.key}_quickbar .quickbar_group[data-server-key="${this.key}"][data-task-name="${task}"] input`).toArray()
 
       var python_param, python_type,value;
 

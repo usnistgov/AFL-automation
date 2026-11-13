@@ -12,4 +12,6 @@ How-to guides are problem-oriented instructions that help users accomplish speci
    my-first-server
    static-directories
    run-tests
+   xarm-gripper
+   xarm-ot2-clearance
    

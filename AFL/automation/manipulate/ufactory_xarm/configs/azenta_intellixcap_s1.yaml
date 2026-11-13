@@ -1,0 +1,31 @@
+name: AzentaIntelliXCapS1
+rail_position: 100
+# Seven joint angles in degrees, used to enter and leave the station.
+# Final Cartesian travel retains the orientation reached at the bottom joint pose.
+poses:
+  horizontal:
+    base: [-0.81211, 5.236204, 7.956951, 16.148242, 2.959728, -57.830292, 0.0]
+    bottom: [-0.457679, 30.062007, -1.304281, 50.539289, -13.301674, -49.451873, 5.599058]
+# Final TCP approach/withdrawal in robot-base X-Z with Y fixed at engage Y.
+# Angle is from vertical (+Z), toward +X on approach; wrist pitch stays fixed.
+# Signed angles must be strictly between -90 and 90 degrees to keep base below engage.
+# Base = engage - distance * [sin(angle), 0, cos(angle)].
+# Distance is the length of the line in mm, not a vertical clearance.
+# TCP/labware corrections shift the whole segment. After dwell, withdrawal
+# uses the measured endpoint; cap keeps using the recorded post-decap reference.
+engage_approach:
+  distance_mm: 45.0
+  angle_deg: 20.0
+locations:
+  # Retained as a calibrated vial-bottom reference; cap/decap derive their
+  # Cartesian approach point from engage_approach and the engage endpoint.
+  bottom:
+    xyz: [669.442139, 40.899723, 172.416412]
+    entries:
+      horizontal: bottom
+    route: bottom
+  engage:
+    xyz: [684.529663, 39.79409, 214.88739]
+    entries:
+      horizontal: bottom
+    route: bottom

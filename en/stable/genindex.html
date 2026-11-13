@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 
@@ -26,18 +25,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/ntd2d.css?v=525a25f0" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
     <script src="_static/documentation_options.js?v=5929fcd5"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
@@ -46,32 +45,40 @@
     <script src="_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="_static/_static/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="_static/logo_light.svg"/>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" />
   
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
 
   <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
   <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
   
 
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -97,9 +104,9 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -191,7 +198,7 @@
         <div class="navbar-item navbar-persistent--container">
           
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -201,11 +208,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -218,8 +232,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -230,7 +243,7 @@
   
     <div class="navbar-persistent--mobile">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -251,7 +264,7 @@
       
         
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
         
 
@@ -320,11 +333,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -337,8 +357,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -388,6 +407,7 @@
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#J"><strong>J</strong></a>
  | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
@@ -408,6 +428,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.__eq__">__eq__() (AFL.automation.mixcalc.Solution method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.vision.html#AFL.automation.vision.__getattr__">__getattr__() (in module AFL.automation.vision)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.shared.PersistentConfig.html#AFL.automation.shared.PersistentConfig.PersistentConfig.__getitem__">__getitem__() (AFL.automation.shared.PersistentConfig.PersistentConfig method)</a>
 </li>
@@ -435,6 +457,8 @@
         <li><a href="_autosummary/AFL.automation.APIServer.data.TiledClients.DriverTask.html#AFL.automation.APIServer.data.TiledClients.DriverTask.DriverTask.__init__">(AFL.automation.APIServer.data.TiledClients.DriverTask.DriverTask method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.__init__">(AFL.automation.APIServer.Driver.Driver method)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.ProxyDriver.__init__">(AFL.automation.APIServer.Driver.ProxyDriver method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.APIServer.DummyDriver.html#AFL.automation.APIServer.DummyDriver.DummyDriver.__init__">(AFL.automation.APIServer.DummyDriver.DummyDriver method)</a>
 </li>
@@ -487,10 +511,6 @@
         <li><a href="_autosummary/AFL.automation.instrument.scatteringInterpolator.html#AFL.automation.instrument.scatteringInterpolator.Scattering_generator.__init__">(AFL.automation.instrument.scatteringInterpolator.Scattering_generator method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.__init__">(AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
-</li>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SICSTelnetClient.__init__">(AFL.automation.instrument.SINQSANS.SICSTelnetClient method)</a>
-</li>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.__init__">(AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS.__init__">(AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS method)</a>
 </li>
@@ -644,15 +664,33 @@
 </li>
         <li><a href="_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabelerView.__init__">(AFL.automation.shared.DiffractionLabeler.DiffractionLabelerView method)</a>
 </li>
+        <li><a href="_autosummary/AFL.automation.shared.liveplot.html#AFL.automation.shared.liveplot.LivePlottingDriver.__init__">(AFL.automation.shared.liveplot.LivePlottingDriver method)</a>
+</li>
         <li><a href="_autosummary/AFL.automation.shared.mock_eic_client.html#AFL.automation.shared.mock_eic_client.MockEICClient.__init__">(AFL.automation.shared.mock_eic_client.MockEICClient method)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.Motor.__init__">(AFL.automation.shared.motors.Motor method)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor.__init__">(AFL.automation.shared.motors.ServoMotor method)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.__init__">(AFL.automation.shared.motors.StepperMotor method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.shared.MutableQueue.html#AFL.automation.shared.MutableQueue.MutableQueue.__init__">(AFL.automation.shared.MutableQueue.MutableQueue method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.shared.PersistentConfig.html#AFL.automation.shared.PersistentConfig.PersistentConfig.__init__">(AFL.automation.shared.PersistentConfig.PersistentConfig method)</a>
 </li>
+        <li><a href="_autosummary/AFL.automation.shared.samplecells.html#AFL.automation.shared.samplecells.SampleCell.__init__">(AFL.automation.shared.samplecells.SampleCell method)</a>
+</li>
         <li><a href="_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.RunThread.__init__">(AFL.automation.shared.ServerDiscovery.RunThread method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery.__init__">(AFL.automation.shared.ServerDiscovery.ServerDiscovery method)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.shared.TiledProxyDriver.html#AFL.automation.shared.TiledProxyDriver.TiledProxyDriver.__init__">(AFL.automation.shared.TiledProxyDriver.TiledProxyDriver method)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.vision.OT2RidingCam.html#AFL.automation.vision.OT2RidingCam.OT2RidingCam.__init__">(AFL.automation.vision.OT2RidingCam.OT2RidingCam method)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.vision.PiCameraDriver.html#AFL.automation.vision.PiCameraDriver.PiCameraDriver.__init__">(AFL.automation.vision.PiCameraDriver.PiCameraDriver method)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.vision.RGBCamera.html#AFL.automation.vision.RGBCamera.RGBCamera.__init__">(AFL.automation.vision.RGBCamera.RGBCamera method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -718,6 +756,8 @@
 </li>
       </ul></li>
       <li><a href="_autosummary/AFL.automation.loading.ChemyxSyringePump.html#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.addMode">addMode() (AFL.automation.loading.ChemyxSyringePump.ChemyxConnection method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor.address">address (AFL.automation.shared.motors.ServoMotor attribute)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.loading.ChemyxSyringePump.html#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.addX">addX() (AFL.automation.loading.ChemyxSyringePump.ChemyxConnection method)</a>
 </li>
@@ -986,13 +1026,6 @@
 </li>
       </ul></li>
       <li>
-    AFL.automation.instrument.SINQSANS
-
-      <ul>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#module-AFL.automation.instrument.SINQSANS">module</a>
-</li>
-      </ul></li>
-      <li>
     AFL.automation.instrument.SINQSANS_NICOS
 
       <ul>
@@ -1111,8 +1144,6 @@
         <li><a href="_autosummary/AFL.automation.loading.FlowSelector.html#module-AFL.automation.loading.FlowSelector">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     AFL.automation.loading.LabJackDigitalOut
 
@@ -1148,6 +1179,8 @@
         <li><a href="_autosummary/AFL.automation.loading.LoadStopperDriver.html#module-AFL.automation.loading.LoadStopperDriver">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     AFL.automation.loading.MultiChannelRelay
 
@@ -1436,10 +1469,24 @@
 </li>
       </ul></li>
       <li>
+    AFL.automation.shared.liveplot
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.shared.liveplot.html#module-AFL.automation.shared.liveplot">module</a>
+</li>
+      </ul></li>
+      <li>
     AFL.automation.shared.mock_eic_client
 
       <ul>
         <li><a href="_autosummary/AFL.automation.shared.mock_eic_client.html#module-AFL.automation.shared.mock_eic_client">module</a>
+</li>
+      </ul></li>
+      <li>
+    AFL.automation.shared.motors
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.shared.motors.html#module-AFL.automation.shared.motors">module</a>
 </li>
       </ul></li>
       <li>
@@ -1457,6 +1504,13 @@
 </li>
       </ul></li>
       <li>
+    AFL.automation.shared.samplecells
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.shared.samplecells.html#module-AFL.automation.shared.samplecells">module</a>
+</li>
+      </ul></li>
+      <li>
     AFL.automation.shared.serialization
 
       <ul>
@@ -1468,6 +1522,20 @@
 
       <ul>
         <li><a href="_autosummary/AFL.automation.shared.ServerDiscovery.html#module-AFL.automation.shared.ServerDiscovery">module</a>
+</li>
+      </ul></li>
+      <li>
+    AFL.automation.shared.tiled
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.shared.tiled.html#module-AFL.automation.shared.tiled">module</a>
+</li>
+      </ul></li>
+      <li>
+    AFL.automation.shared.TiledProxyDriver
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.shared.TiledProxyDriver.html#module-AFL.automation.shared.TiledProxyDriver">module</a>
 </li>
       </ul></li>
       <li>
@@ -1498,6 +1566,41 @@
         <li><a href="_autosummary/AFL.automation.shared.widgetui.html#module-AFL.automation.shared.widgetui">module</a>
 </li>
       </ul></li>
+      <li>
+    AFL.automation.vision
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.vision.html#module-AFL.automation.vision">module</a>
+</li>
+      </ul></li>
+      <li>
+    AFL.automation.vision.ImageProcessing
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.vision.ImageProcessing.html#module-AFL.automation.vision.ImageProcessing">module</a>
+</li>
+      </ul></li>
+      <li>
+    AFL.automation.vision.OT2RidingCam
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.vision.OT2RidingCam.html#module-AFL.automation.vision.OT2RidingCam">module</a>
+</li>
+      </ul></li>
+      <li>
+    AFL.automation.vision.PiCameraDriver
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.vision.PiCameraDriver.html#module-AFL.automation.vision.PiCameraDriver">module</a>
+</li>
+      </ul></li>
+      <li>
+    AFL.automation.vision.RGBCamera
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.vision.RGBCamera.html#module-AFL.automation.vision.RGBCamera">module</a>
+</li>
+      </ul></li>
       <li><a href="_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery.aio_find_server_by_name">aio_find_server_by_name() (AFL.automation.shared.ServerDiscovery.ServerDiscovery method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.APIServer.data.TiledClients.CatalogOfAFLEvents.html#AFL.automation.APIServer.data.TiledClients.CatalogOfAFLEvents.CatalogOfAFLEvents.al_campaign_name">al_campaign_name() (AFL.automation.APIServer.data.TiledClients.CatalogOfAFLEvents.CatalogOfAFLEvents method)</a>
@@ -1505,6 +1608,8 @@
       <li><a href="_autosummary/AFL.automation.loading.SensorPollingThread.html#AFL.automation.loading.SensorPollingThread.SensorPollingThread.alive">alive() (AFL.automation.loading.SensorPollingThread.SensorPollingThread method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.all_components_have_mass">all_components_have_mass() (AFL.automation.mixcalc.Solution method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor.angle">angle (AFL.automation.shared.motors.ServoMotor attribute)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer">APIServer (class in AFL.automation.APIServer)</a>
 </li>
@@ -1546,8 +1651,6 @@
 </li>
       <li><a href="_autosummary/AFL.automation.prepare.OT2_Driver.html#AFL.automation.prepare.OT2_Driver.argmin">argmin() (in module AFL.automation.prepare.OT2_Driver)</a>
 </li>
-      <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SICSTelnetClient.ask_param">ask_param() (AFL.automation.instrument.SINQSANS.SICSTelnetClient method)</a>
-</li>
       <li><a href="_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.axis_id_to_name_lut">axis_id_to_name_lut (AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview attribute)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.axis_name_to_id_lut">axis_name_to_id_lut (AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview attribute)</a>
@@ -1565,7 +1668,11 @@
 </li>
       </ul></li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceBase.balance_report">balance_report() (AFL.automation.mixcalc.MassBalanceBase method)</a>
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.balance_report">(AFL.automation.mixcalc.MassBalanceDriver method)</a>
 </li>
+      </ul></li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.BalanceDiagnosis">BalanceDiagnosis (class in AFL.automation.mixcalc)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS.banana">banana() (AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS method)</a>
@@ -1596,14 +1703,8 @@
         <li><a href="_autosummary/AFL.automation.instrument.APSUSAXS_Phantom.html#AFL.automation.instrument.APSUSAXS_Phantom.APSUSAXS_Phantom.block_for_run_finish">(AFL.automation.instrument.APSUSAXS_Phantom.APSUSAXS_Phantom method)</a>
 </li>
       </ul></li>
-      <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.blockForCompleted">blockForCompleted() (AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
-</li>
       <li><a href="_autosummary/AFL.automation.instrument.NicosScriptClient.html#AFL.automation.instrument.NicosScriptClient.NicosScriptClient.blockForIdle">blockForIdle() (AFL.automation.instrument.NicosScriptClient.NicosScriptClient method)</a>
-
-      <ul>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.blockForIdle">(AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
 </li>
-      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.blockForTableScan">blockForTableScan() (AFL.automation.instrument.BioSANS.BioSANS method)</a>
@@ -1682,6 +1783,12 @@
         <li><a href="_autosummary/AFL.automation.instrument.USBCamera.html#AFL.automation.instrument.USBCamera.USBCamera.camera_reset">(AFL.automation.instrument.USBCamera.USBCamera method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.vision.PiCameraDriver.html#AFL.automation.vision.PiCameraDriver.PiCameraDriver.capture">capture() (AFL.automation.vision.PiCameraDriver.PiCameraDriver method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.vision.RGBCamera.html#AFL.automation.vision.RGBCamera.RGBCamera.capture_rgb">capture_rgb() (AFL.automation.vision.RGBCamera.RGBCamera method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.capture_task_video">capture_task_video() (in module AFL.automation.prepare.PrepareDriver)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.CAStatusPublisher">CAStatusPublisher (class in AFL.automation.APIServer)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.APIServer.data.TiledClients.CatalogOfAFLEvents.html#AFL.automation.APIServer.data.TiledClients.CatalogOfAFLEvents.CatalogOfAFLEvents">CatalogOfAFLEvents (class in AFL.automation.APIServer.data.TiledClients.CatalogOfAFLEvents)</a>
@@ -1744,6 +1851,8 @@
       </ul></li>
       <li><a href="_autosummary/AFL.automation.instrument.NICEDevice.html#AFL.automation.instrument.NICEDevice.NICEDevice.changed">changed() (AFL.automation.instrument.NICEDevice.NICEDevice method)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor.channel">channel (AFL.automation.shared.motors.ServoMotor attribute)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.loading.UltimusVPressureController.html#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.char_count">char_count() (AFL.automation.loading.UltimusVPressureController.UltimusVPressureController method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.APIServer.QueueDaemon.html#AFL.automation.APIServer.QueueDaemon.QueueDaemon.check_if_paused">check_if_paused() (AFL.automation.APIServer.QueueDaemon.QueueDaemon method)</a>
@@ -1754,12 +1863,18 @@
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.CHESSID3B.html#AFL.automation.instrument.CHESSID3B.CHESSID3B">CHESSID3B (class in AFL.automation.instrument.CHESSID3B)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.vision.ImageProcessing.html#AFL.automation.vision.ImageProcessing.ImageProcessing.circular_mask">circular_mask() (AFL.automation.vision.ImageProcessing.ImageProcessing static method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.clean_config">clean_config() (AFL.automation.APIServer.Driver.Driver method)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor.cleanup">cleanup() (AFL.automation.shared.motors.ServoMotor method)</a>
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.cleanup">(AFL.automation.shared.motors.StepperMotor method)</a>
+</li>
+      </ul></li>
       <li><a href="_autosummary/AFL.automation.shared.MutableQueue.html#AFL.automation.shared.MutableQueue.MutableQueue.clear">clear() (AFL.automation.shared.MutableQueue.MutableQueue method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.clear_history">clear_history() (AFL.automation.APIServer.APIServer method)</a>
 
       <ul>
@@ -1774,6 +1889,12 @@
         <li><a href="_autosummary/AFL.automation.APIServer.Client.html#AFL.automation.APIServer.Client.Client.clear_queue">(AFL.automation.APIServer.Client.Client method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.clear_runs">clear_runs() (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.clear_sample_locations">clear_sample_locations() (AFL.automation.prepare.OT2Prepare.OT2Prepare method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.client">client (AFL.automation.instrument.BioSANS.BioSANS property)</a>
 
       <ul>
@@ -1784,6 +1905,16 @@
 </li>
       <li><a href="_autosummary/AFL.automation.shared.widgetui.html#AFL.automation.shared.widgetui.client_construct_ui">client_construct_ui() (in module AFL.automation.shared.widgetui)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor.close">close() (AFL.automation.shared.motors.ServoMotor method)</a>
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.shared.TiledProxyDriver.html#AFL.automation.shared.TiledProxyDriver.TiledProxyDriver.close">(AFL.automation.shared.TiledProxyDriver.TiledProxyDriver method)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.vision.PiCameraDriver.html#AFL.automation.vision.PiCameraDriver.PiCameraDriver.close">(AFL.automation.vision.PiCameraDriver.PiCameraDriver method)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.vision.RGBCamera.html#AFL.automation.vision.RGBCamera.RGBCamera.close">(AFL.automation.vision.RGBCamera.RGBCamera method)</a>
+</li>
+      </ul></li>
       <li><a href="_autosummary/AFL.automation.loading.ChemyxSyringePump.html#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.closeConnection">closeConnection() (AFL.automation.loading.ChemyxSyringePump.ChemyxConnection method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.GPInterpolator.html#AFL.automation.instrument.GPInterpolator.ClusteredGPs">ClusteredGPs (class in AFL.automation.instrument.GPInterpolator)</a>
@@ -1830,13 +1961,23 @@
 </li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.concentration">concentration (AFL.automation.mixcalc.Solution property)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.config_editor">config_editor() (AFL.automation.APIServer.APIServer method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.config_editor_retro">config_editor_retro() (AFL.automation.APIServer.APIServer method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.instrument.NicosScriptClient.html#AFL.automation.instrument.NicosScriptClient.NicosScriptClient.connect">connect() (AFL.automation.instrument.NicosScriptClient.NicosScriptClient method)</a>
 
       <ul>
         <li><a href="_autosummary/AFL.automation.instrument.PySpecClient.html#AFL.automation.instrument.PySpecClient.PySpecClient.connect">(AFL.automation.instrument.PySpecClient.PySpecClient method)</a>
 </li>
+        <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.connect">(AFL.automation.shared.motors.StepperMotor method)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.shared.TiledProxyDriver.html#AFL.automation.shared.TiledProxyDriver.TiledProxyDriver.connect">(AFL.automation.shared.TiledProxyDriver.TiledProxyDriver method)</a>
+</li>
       </ul></li>
       <li><a href="_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS.connect_to_nicos">connect_to_nicos() (AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.connected">connected (AFL.automation.shared.motors.StepperMotor attribute)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.GPInterpolator.html#AFL.automation.instrument.GPInterpolator.Interpolator.construct_model">construct_model() (AFL.automation.instrument.GPInterpolator.Interpolator method)</a>
 
@@ -1859,6 +2000,12 @@
       <li><a href="_autosummary/AFL.automation.instrument.PySpecClient.html#AFL.automation.instrument.PySpecClient.PySpecClient.count">count() (AFL.automation.instrument.PySpecClient.PySpecClient method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.create_queue">create_queue() (AFL.automation.APIServer.APIServer method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.TiledProxyDriver.html#AFL.automation.shared.TiledProxyDriver.create_server">create_server() (in module AFL.automation.shared.TiledProxyDriver)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.vision.ImageProcessing.html#AFL.automation.vision.ImageProcessing.ImageProcessing.crop_image">crop_image() (AFL.automation.vision.ImageProcessing.ImageProcessing static method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.vision.ImageProcessing.html#AFL.automation.vision.ImageProcessing.ImageProcessing.crop_to_circle">crop_to_circle() (AFL.automation.vision.ImageProcessing.ImageProcessing method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1900,12 +2047,16 @@
 </li>
       <li><a href="_autosummary/AFL.automation.prepare.OT2_Driver.html#AFL.automation.prepare.OT2_Driver.OT2_Driver.deactivate_temp">deactivate_temp() (AFL.automation.prepare.OT2_Driver.OT2_Driver method)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.deactivate_tempmodule">deactivate_tempmodule() (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.debug">debug() (AFL.automation.APIServer.APIServer method)</a>
 
       <ul>
         <li><a href="_autosummary/AFL.automation.APIServer.Client.html#AFL.automation.APIServer.Client.Client.debug">(AFL.automation.APIServer.Client.Client method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.DECK_STREAM_REQUEST_TIMEOUT_SECONDS">DECK_STREAM_REQUEST_TIMEOUT_SECONDS (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver attribute)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.APIServer.DummyDriver.html#AFL.automation.APIServer.DummyDriver.DummyDriver.defaults">defaults (AFL.automation.APIServer.DummyDriver.DummyDriver attribute)</a>
 
       <ul>
@@ -1932,8 +2083,6 @@
         <li><a href="_autosummary/AFL.automation.instrument.ScatteringInstrument.html#AFL.automation.instrument.ScatteringInstrument.ScatteringInstrument.defaults">(AFL.automation.instrument.ScatteringInstrument.ScatteringInstrument attribute)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.defaults">(AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis attribute)</a>
-</li>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.defaults">(AFL.automation.instrument.SINQSANS.SINQSANS attribute)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS.defaults">(AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS attribute)</a>
 </li>
@@ -1971,9 +2120,33 @@
 </li>
         <li><a href="_autosummary/AFL.automation.sample_env.TemperatureDeck.html#AFL.automation.sample_env.TemperatureDeck.TemperatureDeck.defaults">(AFL.automation.sample_env.TemperatureDeck.TemperatureDeck attribute)</a>
 </li>
+        <li><a href="_autosummary/AFL.automation.shared.liveplot.html#AFL.automation.shared.liveplot.LivePlotBO.defaults">(AFL.automation.shared.liveplot.LivePlotBO attribute)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.shared.liveplot.html#AFL.automation.shared.liveplot.LivePlottingDriver.defaults">(AFL.automation.shared.liveplot.LivePlottingDriver attribute)</a>
+</li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor.DEFAULTS">DEFAULTS (AFL.automation.shared.motors.ServoMotor attribute)</a>
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.DEFAULTS">(AFL.automation.shared.motors.StepperMotor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/AFL.automation.shared.samplecells.html#AFL.automation.shared.samplecells.NeutronSampleCell.defaults">defaults (AFL.automation.shared.samplecells.NeutronSampleCell attribute)</a>
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.shared.samplecells.html#AFL.automation.shared.samplecells.SampleCell.defaults">(AFL.automation.shared.samplecells.SampleCell attribute)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.shared.samplecells.html#AFL.automation.shared.samplecells.ScrewCapVial.defaults">(AFL.automation.shared.samplecells.ScrewCapVial attribute)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.shared.TiledProxyDriver.html#AFL.automation.shared.TiledProxyDriver.TiledProxyDriver.defaults">(AFL.automation.shared.TiledProxyDriver.TiledProxyDriver attribute)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.vision.PiCameraDriver.html#AFL.automation.vision.PiCameraDriver.PiCameraDriver.defaults">(AFL.automation.vision.PiCameraDriver.PiCameraDriver attribute)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.vision.RGBCamera.html#AFL.automation.vision.RGBCamera.RGBCamera.defaults">(AFL.automation.vision.RGBCamera.RGBCamera attribute)</a>
+</li>
+      </ul></li>
       <li><a href="_autosummary/AFL.automation.instrument.GPInterpolator.html#AFL.automation.instrument.GPInterpolator.ClusteredGPs.define_domains">define_domains() (AFL.automation.instrument.GPInterpolator.ClusteredGPs method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.density">density (AFL.automation.mixcalc.Component property)</a>
@@ -1999,6 +2172,8 @@
       <li><a href="_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabelerView">DiffractionLabelerView (class in AFL.automation.shared.DiffractionLabeler)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.loading.DigitalOutPressureController.html#AFL.automation.loading.DigitalOutPressureController.DigitalOutPressureController">DigitalOutPressureController (class in AFL.automation.loading.DigitalOutPressureController)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.dir_pin">dir_pin (AFL.automation.shared.motors.StepperMotor attribute)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery.discover_server_by_name">discover_server_by_name() (AFL.automation.shared.ServerDiscovery.ServerDiscovery method)</a>
 </li>
@@ -2078,6 +2253,8 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.emergency_stop">emergency_stop() (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.emit">emit() (AFL.automation.mixcalc.Component method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.PipetteAction.emit_protocol">emit_protocol() (AFL.automation.mixcalc.PipetteAction method)</a>
@@ -2116,6 +2293,8 @@
         <li><a href="_autosummary/AFL.automation.APIServer.Client.html#AFL.automation.APIServer.Client.Client.enqueue">(AFL.automation.APIServer.Client.Client method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.ProxyDriver.enqueue_proxy">enqueue_proxy() (AFL.automation.APIServer.Driver.ProxyDriver method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.APIServer.Client.html#AFL.automation.APIServer.Client.Client.enqueued_base">enqueued_base() (AFL.automation.APIServer.Client.Client method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.NicosScriptClient.html#AFL.automation.instrument.NicosScriptClient.NicosScriptClient.estop">estop() (AFL.automation.instrument.NicosScriptClient.NicosScriptClient method)</a>
@@ -2171,8 +2350,6 @@
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.ScatteringInstrument.html#AFL.automation.instrument.ScatteringInstrument.ScatteringInstrument.expose">(AFL.automation.instrument.ScatteringInstrument.ScatteringInstrument method)</a>
 </li>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.expose">(AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
-</li>
         <li><a href="_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS.expose">(AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.VirtualInstrument.html#AFL.automation.instrument.VirtualInstrument.VirtualInstrument.expose">(AFL.automation.instrument.VirtualInstrument.VirtualInstrument method)</a>
@@ -2182,6 +2359,14 @@
         <li><a href="_autosummary/AFL.automation.instrument.VirtualSAS.html#AFL.automation.instrument.VirtualSAS.VirtualSAS.expose">(AFL.automation.instrument.VirtualSAS.VirtualSAS method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.VirtualSAS_theory.html#AFL.automation.instrument.VirtualSAS_theory.VirtualSAS_theory.expose">(AFL.automation.instrument.VirtualSAS_theory.VirtualSAS_theory method)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/AFL.automation.shared.samplecells.html#AFL.automation.shared.samplecells.NeutronSampleCell.extract_sample_image">extract_sample_image() (AFL.automation.shared.samplecells.NeutronSampleCell method)</a>
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.shared.samplecells.html#AFL.automation.shared.samplecells.SampleCell.extract_sample_image">(AFL.automation.shared.samplecells.SampleCell method)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.shared.samplecells.html#AFL.automation.shared.samplecells.ScrewCapVial.extract_sample_image">(AFL.automation.shared.samplecells.ScrewCapVial method)</a>
 </li>
       </ul></li>
       <li><a href="_autosummary/AFL.automation.shared.DatasetWidget.html#AFL.automation.shared.DatasetWidget.DatasetWidget.extract_var">extract_var() (AFL.automation.shared.DatasetWidget.DatasetWidget method)</a>
@@ -2214,6 +2399,8 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/AFL.automation.vision.ImageProcessing.html#AFL.automation.vision.ImageProcessing.ImageProcessing.find_circular_region">find_circular_region() (AFL.automation.vision.ImageProcessing.ImageProcessing static method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery.find_server_by_name">find_server_by_name() (AFL.automation.shared.ServerDiscovery.ServerDiscovery method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery.find_server_by_partial_name">find_server_by_partial_name() (AFL.automation.shared.ServerDiscovery.ServerDiscovery method)</a>
@@ -2223,8 +2410,6 @@
       <li><a href="_autosummary/AFL.automation.loading.FlowSelector.html#AFL.automation.loading.FlowSelector.FlowSelector">FlowSelector (class in AFL.automation.loading.FlowSelector)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.shared.PersistentConfig.html#AFL.automation.shared.PersistentConfig.PersistentConfig.flush">flush() (AFL.automation.shared.PersistentConfig.PersistentConfig method)</a>
-</li>
-      <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SICSTelnetClient.flush_buffer">flush_buffer() (AFL.automation.instrument.SINQSANS.SICSTelnetClient method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.formula">formula (AFL.automation.mixcalc.Component property)</a>
 </li>
@@ -2254,17 +2439,29 @@
       </ul></li>
       <li><a href="_autosummary/AFL.automation.instrument.scatteringInterpolator.html#AFL.automation.instrument.scatteringInterpolator.Scattering_generator.generate_SAS">generate_SAS() (AFL.automation.instrument.scatteringInterpolator.Scattering_generator method)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.generate_sweep_targets">generate_sweep_targets() (AFL.automation.mixcalc.MassBalanceDriver method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.instrument.ScatteringInstrument.html#AFL.automation.instrument.ScatteringInstrument.ScatteringInstrument.generateIntegrator">generateIntegrator() (AFL.automation.instrument.ScatteringInstrument.ScatteringInstrument method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.scatteringInterpolator.html#AFL.automation.instrument.scatteringInterpolator.GenerateScattering">GenerateScattering (class in AFL.automation.instrument.scatteringInterpolator)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.shared.samplecells.html#AFL.automation.shared.samplecells.NeutronSampleCell.geometry_defaults">geometry_defaults (AFL.automation.shared.samplecells.NeutronSampleCell attribute)</a>
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.shared.samplecells.html#AFL.automation.shared.samplecells.ScrewCapVial.geometry_defaults">(AFL.automation.shared.samplecells.ScrewCapVial attribute)</a>
+</li>
+      </ul></li>
       <li><a href="_autosummary/AFL.automation.instrument.NicosScriptClient.html#AFL.automation.instrument.NicosScriptClient.NicosScriptClient.get">get() (AFL.automation.instrument.NicosScriptClient.NicosScriptClient method)</a>
 
       <ul>
         <li><a href="_autosummary/AFL.automation.shared.MutableQueue.html#AFL.automation.shared.MutableQueue.MutableQueue.get">(AFL.automation.shared.MutableQueue.MutableQueue method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.shared.tiled.html#AFL.automation.shared.tiled.get_afl_home">get_afl_home() (in module AFL.automation.shared.tiled)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_aspirate_rate">get_aspirate_rate() (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_available_wells">get_available_wells() (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.get_balance_progress">get_balance_progress() (AFL.automation.mixcalc.MassBalanceDriver method)</a>
 </li>
@@ -2306,6 +2503,14 @@
         <li><a href="_autosummary/AFL.automation.APIServer.Client.html#AFL.automation.APIServer.Client.Client.get_driver_object">(AFL.automation.APIServer.Client.Client method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_exposure">get_exposure() (AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_exposure_delay">get_exposure_delay() (AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_file_name">get_file_name() (AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_file_path">get_file_path() (AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.shared.PersistentConfig.html#AFL.automation.shared.PersistentConfig.PersistentConfig.get_historical_values">get_historical_values() (AFL.automation.shared.PersistentConfig.PersistentConfig method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_info">get_info() (AFL.automation.APIServer.APIServer method)</a>
@@ -2358,6 +2563,8 @@
       </ul></li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceWebAppMixin.get_prepare_context">get_prepare_context() (AFL.automation.mixcalc.MassBalanceWebAppMixin method)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.ProxyDriver.get_proxy_client">get_proxy_client() (AFL.automation.APIServer.Driver.ProxyDriver method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.prepare.BioSANSPrepare.html#AFL.automation.prepare.BioSANSPrepare.BioSANSPrepare.get_pv">get_pv() (AFL.automation.prepare.BioSANSPrepare.BioSANSPrepare method)</a>
 
       <ul>
@@ -2384,9 +2591,13 @@
         <li><a href="_autosummary/AFL.automation.APIServer.Client.html#AFL.automation.APIServer.Client.Client.get_quickbar">(AFL.automation.APIServer.Client.Client method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_reference_path">get_reference_path() (AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.get_sample">get_sample() (AFL.automation.APIServer.Driver.Driver method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.get_sample_composition">get_sample_composition() (AFL.automation.mixcalc.MassBalanceDriver method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_save_single_scan">get_save_single_scan() (AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.shared.mock_eic_client.html#AFL.automation.shared.mock_eic_client.MockEICClient.get_scan_status">get_scan_status() (AFL.automation.shared.mock_eic_client.MockEICClient method)</a>
 </li>
@@ -2426,9 +2637,15 @@
       </ul></li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MixDB.get_source">get_source() (AFL.automation.mixcalc.MixDB method)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare.get_stock_inventory">get_stock_inventory() (AFL.automation.prepare.OT2Prepare.OT2Prepare method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.get_storage_sources">get_storage_sources() (AFL.automation.mixcalc.MassBalanceDriver method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.prepare.OT2_Driver.html#AFL.automation.prepare.OT2_Driver.OT2_Driver.get_temp">get_temp() (AFL.automation.prepare.OT2_Driver.OT2_Driver method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_tempmodule_status">get_tempmodule_status() (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.tiled.html#AFL.automation.shared.tiled.get_tiled_client">get_tiled_client() (in module AFL.automation.shared.tiled)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_tip">get_tip() (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver method)</a>
 </li>
@@ -2438,6 +2655,8 @@
 </li>
       <li><a href="_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.get_unit_type">get_unit_type() (in module AFL.automation.shared.units)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.get_unqueued_commands">get_unqueued_commands() (AFL.automation.APIServer.APIServer method)</a>
 
       <ul>
@@ -2452,8 +2671,6 @@
         <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_wells">(AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver method)</a>
 </li>
       </ul></li>
-      <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.getAutoExposure">getAutoExposure() (AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
-</li>
       <li><a href="_autosummary/AFL.automation.loading.LabJackRelay.html#AFL.automation.loading.LabJackRelay.LabJackRelay.getChannels">getChannels() (AFL.automation.loading.LabJackRelay.LabJackRelay method)</a>
 
       <ul>
@@ -2466,8 +2683,6 @@
         <li><a href="_autosummary/AFL.automation.loading.VirtualPneumaticPressureLoader.html#AFL.automation.loading.VirtualPneumaticPressureLoader.NoOpRelayBoard.getChannels">(AFL.automation.loading.VirtualPneumaticPressureLoader.NoOpRelayBoard method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/AFL.automation.instrument.APSDNDCAT.html#AFL.automation.instrument.APSDNDCAT.APSDNDCAT.getData">getData() (AFL.automation.instrument.APSDNDCAT.APSDNDCAT method)</a>
 
       <ul>
@@ -2476,8 +2691,6 @@
         <li><a href="_autosummary/AFL.automation.instrument.CHESSID3B.html#AFL.automation.instrument.CHESSID3B.CHESSID3B.getData">(AFL.automation.instrument.CHESSID3B.CHESSID3B method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.getData">(AFL.automation.instrument.ISISLARMOR.ISISLARMOR method)</a>
-</li>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.getData">(AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS.getData">(AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS method)</a>
 </li>
@@ -2495,8 +2708,6 @@
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.CHESSID3B.html#AFL.automation.instrument.CHESSID3B.CHESSID3B.getElapsedTime">(AFL.automation.instrument.CHESSID3B.CHESSID3B method)</a>
 </li>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.getElapsedTime">(AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
-</li>
         <li><a href="_autosummary/AFL.automation.loading.ChemyxSyringePump.html#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.getElapsedTime">(AFL.automation.loading.ChemyxSyringePump.ChemyxConnection method)</a>
 </li>
       </ul></li>
@@ -2508,8 +2719,6 @@
         <li><a href="_autosummary/AFL.automation.instrument.CHESSID3B.html#AFL.automation.instrument.CHESSID3B.CHESSID3B.getExposure">(AFL.automation.instrument.CHESSID3B.CHESSID3B method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.getExposure">(AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
-</li>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.getExposure">(AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS.getExposure">(AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS method)</a>
 </li>
@@ -2529,8 +2738,6 @@
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.getFilename">(AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
 </li>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.getFilename">(AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
-</li>
       </ul></li>
       <li><a href="_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.getFilenamePrefix">getFilenamePrefix() (AFL.automation.instrument.APSUSAXS.APSUSAXS method)</a>
 </li>
@@ -2544,8 +2751,6 @@
         <li><a href="_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.getLastFilePath">(AFL.automation.instrument.BioSANS.BioSANS method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.CHESSID3B.html#AFL.automation.instrument.CHESSID3B.CHESSID3B.getLastFilePath">(AFL.automation.instrument.CHESSID3B.CHESSID3B method)</a>
-</li>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.getLastFilePath">(AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
 </li>
       </ul></li>
       <li><a href="_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS.getLastFilePathLocal">getLastFilePathLocal() (AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS method)</a>
@@ -2641,8 +2846,6 @@
       <li><a href="_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.getStatus">getStatus() (AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview method)</a>
 
       <ul>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.getStatus">(AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
-</li>
         <li><a href="_autosummary/AFL.automation.loading.CetoniSyringePump.html#AFL.automation.loading.CetoniSyringePump.CetoniSyringePump.getStatus">(AFL.automation.loading.CetoniSyringePump.CetoniSyringePump method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.loading.ChemyxSyringePump.html#AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump.getStatus">(AFL.automation.loading.ChemyxSyringePump.ChemyxSyringePump method)</a>
@@ -2715,6 +2918,8 @@
 </li>
         <li><a href="_autosummary/AFL.automation.prepare.VirtualOT2HTTPDriver.html#AFL.automation.prepare.VirtualOT2HTTPDriver.VirtualOT2HTTPDriver.home">(AFL.automation.prepare.VirtualOT2HTTPDriver.VirtualOT2HTTPDriver method)</a>
 </li>
+        <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.home">(AFL.automation.shared.motors.StepperMotor method)</a>
+</li>
       </ul></li>
       <li><a href="_autosummary/AFL.automation.APIServer.DummyDriver.html#AFL.automation.APIServer.DummyDriver.DummyDriver.how_many">how_many() (AFL.automation.APIServer.DummyDriver.DummyDriver method)</a>
 
@@ -2729,6 +2934,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/AFL.automation.instrument.I22SAXS.html#AFL.automation.instrument.I22SAXS.I22SAXS">I22SAXS (class in AFL.automation.instrument.I22SAXS)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.vision.ImageProcessing.html#AFL.automation.vision.ImageProcessing.ImageProcessing">ImageProcessing (class in AFL.automation.vision.ImageProcessing)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.index">index() (AFL.automation.APIServer.APIServer method)</a>
 </li>
@@ -2762,10 +2969,10 @@
         <li><a href="_autosummary/AFL.automation.instrument.CHESSID3B.html#AFL.automation.instrument.CHESSID3B.CHESSID3B.interactiveLoad">(AFL.automation.instrument.CHESSID3B.CHESSID3B method)</a>
 </li>
       </ul></li>
-      <li><a href="_autosummary/AFL.automation.instrument.GPInterpolator.html#AFL.automation.instrument.GPInterpolator.Interpolator">Interpolator (class in AFL.automation.instrument.GPInterpolator)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/AFL.automation.instrument.GPInterpolator.html#AFL.automation.instrument.GPInterpolator.Interpolator">Interpolator (class in AFL.automation.instrument.GPInterpolator)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.is_concentration">is_concentration() (in module AFL.automation.shared.units)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.is_density">is_density() (in module AFL.automation.shared.units)</a>
@@ -2792,11 +2999,17 @@
 </li>
       <li><a href="_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.is_volume">is_volume() (in module AFL.automation.shared.units)</a>
 </li>
-      <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.isCounting">isCounting() (AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
-</li>
       <li><a href="_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR">ISISLARMOR (class in AFL.automation.instrument.ISISLARMOR)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.shared.MutableQueue.html#AFL.automation.shared.MutableQueue.MutableQueue.iterationid">iterationid() (AFL.automation.shared.MutableQueue.MutableQueue method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="J">J</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.jupyterlite">jupyterlite() (AFL.automation.APIServer.APIServer method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -2831,8 +3044,6 @@
       <li><a href="_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.lastMeasuredTransmission">lastMeasuredTransmission() (AFL.automation.instrument.BioSANS.BioSANS method)</a>
 
       <ul>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.lastMeasuredTransmission">(AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
-</li>
         <li><a href="_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS.lastMeasuredTransmission">(AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS method)</a>
 </li>
       </ul></li>
@@ -2872,6 +3083,16 @@
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.NicosScriptClient.html#AFL.automation.instrument.NicosScriptClient.NicosScriptClient.livedata">livedata (AFL.automation.instrument.NicosScriptClient.NicosScriptClient attribute)</a>, <a href="_autosummary/AFL.automation.instrument.NicosScriptClient.html#id0">[1]</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.shared.liveplot.html#AFL.automation.shared.liveplot.LivePlottingDriver.liveplot">liveplot() (AFL.automation.shared.liveplot.LivePlottingDriver method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.liveplot.html#AFL.automation.shared.liveplot.LivePlottingDriver.liveplot_data">liveplot_data() (AFL.automation.shared.liveplot.LivePlottingDriver method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.liveplot.html#AFL.automation.shared.liveplot.LivePlottingDriver.liveplot_image">liveplot_image() (AFL.automation.shared.liveplot.LivePlottingDriver method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.liveplot.html#AFL.automation.shared.liveplot.LivePlotBO">LivePlotBO (class in AFL.automation.shared.liveplot)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.liveplot.html#AFL.automation.shared.liveplot.LivePlottingDriver">LivePlottingDriver (class in AFL.automation.shared.liveplot)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.instrument.GPInterpolator.html#AFL.automation.instrument.GPInterpolator.Interpolator.load_data">load_data() (AFL.automation.instrument.GPInterpolator.Interpolator method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.GPInterpolator.html#AFL.automation.instrument.GPInterpolator.ClusteredGPs.load_datasets">load_datasets() (AFL.automation.instrument.GPInterpolator.ClusteredGPs method)</a>
@@ -2903,6 +3124,8 @@
 </li>
       </ul></li>
       <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_module">load_module() (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.TiledProxyDriver.html#AFL.automation.shared.TiledProxyDriver.load_profile">load_profile() (in module AFL.automation.shared.TiledProxyDriver)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.VirtualSAS.html#AFL.automation.instrument.VirtualSAS.VirtualSAS.load_reference_data">load_reference_data() (AFL.automation.instrument.VirtualSAS.VirtualSAS method)</a>
 </li>
@@ -2972,6 +3195,8 @@
       </ul></li>
       <li><a href="_autosummary/AFL.automation.APIServer.Client.html#AFL.automation.APIServer.Client.Client.logged_in">logged_in() (AFL.automation.APIServer.Client.Client method)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.Motor.logger">logger (AFL.automation.shared.motors.Motor attribute)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.APIServer.LoggerFilter.html#AFL.automation.APIServer.LoggerFilter.LoggerFilter">LoggerFilter (class in AFL.automation.APIServer.LoggerFilter)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.login">login() (AFL.automation.APIServer.APIServer method)</a>
@@ -2988,6 +3213,8 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/AFL.automation.shared.TiledProxyDriver.html#AFL.automation.shared.TiledProxyDriver.main">main() (in module AFL.automation.shared.TiledProxyDriver)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.make_align_script">make_align_script() (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.prepare.utilities.html#AFL.automation.prepare.utilities.make_locs">make_locs() (in module AFL.automation.prepare.utilities)</a>
@@ -3029,12 +3256,18 @@
       <li><a href="_autosummary/AFL.automation.instrument.OpticalTurbidity.html#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity.measure">measure() (AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity method)</a>
 
       <ul>
+        <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.measure">(AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
+</li>
         <li><a href="_autosummary/AFL.automation.instrument.VirtualInstrument.html#AFL.automation.instrument.VirtualInstrument.VirtualInstrument.measure">(AFL.automation.instrument.VirtualInstrument.VirtualInstrument method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.VirtualSpec_data.html#AFL.automation.instrument.VirtualSpec_data.VirtualSpec_data.measure">(AFL.automation.instrument.VirtualSpec_data.VirtualSpec_data method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.vision.ImageProcessing.html#AFL.automation.vision.ImageProcessing.ImageProcessing.measure_mean_rgb">measure_mean_rgb() (AFL.automation.vision.ImageProcessing.ImageProcessing method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.measure_out">measure_out() (AFL.automation.mixcalc.Solution method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.vision.ImageProcessing.html#AFL.automation.vision.ImageProcessing.ImageProcessing.measure_turbidity">measure_turbidity() (AFL.automation.vision.ImageProcessing.ImageProcessing method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.APSDNDCAT.html#AFL.automation.instrument.APSDNDCAT.APSDNDCAT.measureTransmission">measureTransmission() (AFL.automation.instrument.APSDNDCAT.APSDNDCAT method)</a>
 
@@ -3042,8 +3275,6 @@
         <li><a href="_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.measureTransmission">(AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.CHESSID3B.html#AFL.automation.instrument.CHESSID3B.CHESSID3B.measureTransmission">(AFL.automation.instrument.CHESSID3B.CHESSID3B method)</a>
-</li>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.measureTransmission">(AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS.measureTransmission">(AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS method)</a>
 </li>
@@ -3155,8 +3386,6 @@
         <li><a href="_autosummary/AFL.automation.instrument.scatteringInterpolator.html#module-AFL.automation.instrument.scatteringInterpolator">AFL.automation.instrument.scatteringInterpolator</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#module-AFL.automation.instrument.SeabreezeUVVis">AFL.automation.instrument.SeabreezeUVVis</a>
-</li>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#module-AFL.automation.instrument.SINQSANS">AFL.automation.instrument.SINQSANS</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#module-AFL.automation.instrument.SINQSANS_NICOS">AFL.automation.instrument.SINQSANS_NICOS</a>
 </li>
@@ -3284,15 +3513,25 @@
 </li>
         <li><a href="_autosummary/AFL.automation.shared.exceptions.html#module-AFL.automation.shared.exceptions">AFL.automation.shared.exceptions</a>
 </li>
+        <li><a href="_autosummary/AFL.automation.shared.liveplot.html#module-AFL.automation.shared.liveplot">AFL.automation.shared.liveplot</a>
+</li>
         <li><a href="_autosummary/AFL.automation.shared.mock_eic_client.html#module-AFL.automation.shared.mock_eic_client">AFL.automation.shared.mock_eic_client</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.shared.motors.html#module-AFL.automation.shared.motors">AFL.automation.shared.motors</a>
 </li>
         <li><a href="_autosummary/AFL.automation.shared.MutableQueue.html#module-AFL.automation.shared.MutableQueue">AFL.automation.shared.MutableQueue</a>
 </li>
         <li><a href="_autosummary/AFL.automation.shared.PersistentConfig.html#module-AFL.automation.shared.PersistentConfig">AFL.automation.shared.PersistentConfig</a>
 </li>
+        <li><a href="_autosummary/AFL.automation.shared.samplecells.html#module-AFL.automation.shared.samplecells">AFL.automation.shared.samplecells</a>
+</li>
         <li><a href="_autosummary/AFL.automation.shared.serialization.html#module-AFL.automation.shared.serialization">AFL.automation.shared.serialization</a>
 </li>
         <li><a href="_autosummary/AFL.automation.shared.ServerDiscovery.html#module-AFL.automation.shared.ServerDiscovery">AFL.automation.shared.ServerDiscovery</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.shared.tiled.html#module-AFL.automation.shared.tiled">AFL.automation.shared.tiled</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.shared.TiledProxyDriver.html#module-AFL.automation.shared.TiledProxyDriver">AFL.automation.shared.TiledProxyDriver</a>
 </li>
         <li><a href="_autosummary/AFL.automation.shared.units.html#module-AFL.automation.shared.units">AFL.automation.shared.units</a>
 </li>
@@ -3302,6 +3541,16 @@
 </li>
         <li><a href="_autosummary/AFL.automation.shared.widgetui.html#module-AFL.automation.shared.widgetui">AFL.automation.shared.widgetui</a>
 </li>
+        <li><a href="_autosummary/AFL.automation.vision.html#module-AFL.automation.vision">AFL.automation.vision</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.vision.ImageProcessing.html#module-AFL.automation.vision.ImageProcessing">AFL.automation.vision.ImageProcessing</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.vision.OT2RidingCam.html#module-AFL.automation.vision.OT2RidingCam">AFL.automation.vision.OT2RidingCam</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.vision.PiCameraDriver.html#module-AFL.automation.vision.PiCameraDriver">AFL.automation.vision.PiCameraDriver</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.vision.RGBCamera.html#module-AFL.automation.vision.RGBCamera">AFL.automation.vision.RGBCamera</a>
+</li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -3310,6 +3559,8 @@
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.molarity">molarity (AFL.automation.mixcalc.Solution property)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.moles">moles (AFL.automation.mixcalc.Component property)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.Motor">Motor (class in AFL.automation.shared.motors)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.shared.MutableQueue.html#AFL.automation.shared.MutableQueue.MutableQueue.move">move() (AFL.automation.shared.MutableQueue.MutableQueue method)</a>
 </li>
@@ -3345,6 +3596,8 @@
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.NetworkCamera.html#AFL.automation.instrument.NetworkCamera.NetworkCamera">NetworkCamera (class in AFL.automation.instrument.NetworkCamera)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.shared.samplecells.html#AFL.automation.shared.samplecells.NeutronSampleCell">NeutronSampleCell (class in AFL.automation.shared.samplecells)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.shared.DataLabelerWidget.html#AFL.automation.shared.DataLabelerWidget.DataLabelerWidget.next_button_callback">next_button_callback() (AFL.automation.shared.DataLabelerWidget.DataLabelerWidget method)</a>
 
       <ul>
@@ -3357,10 +3610,10 @@
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.NICEData.html#AFL.automation.instrument.NICEData.NICEData">NICEData (class in AFL.automation.instrument.NICEData)</a>
 </li>
-      <li><a href="_autosummary/AFL.automation.instrument.NICEDevice.html#AFL.automation.instrument.NICEDevice.NICEDevice">NICEDevice (class in AFL.automation.instrument.NICEDevice)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/AFL.automation.instrument.NICEDevice.html#AFL.automation.instrument.NICEDevice.NICEDevice">NICEDevice (class in AFL.automation.instrument.NICEDevice)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.instrument.NicosScriptClient.html#AFL.automation.instrument.NicosScriptClient.NicosScriptClient">NicosScriptClient (class in AFL.automation.instrument.NicosScriptClient)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.CDSAXSLabview.html#AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview.nmcMoveAxis">nmcMoveAxis() (AFL.automation.instrument.CDSAXSLabview.CDSAXSLabview method)</a>
@@ -3401,8 +3654,12 @@
         <li><a href="_autosummary/AFL.automation.instrument.NICEDevice.html#AFL.automation.instrument.NICEDevice.NICEDevice.onSubscribe">(AFL.automation.instrument.NICEDevice.NICEDevice method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor.open">open() (AFL.automation.shared.motors.ServoMotor method)</a>
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.vision.RGBCamera.html#AFL.automation.vision.RGBCamera.RGBCamera.open">(AFL.automation.vision.RGBCamera.RGBCamera method)</a>
+</li>
+      </ul></li>
       <li><a href="_autosummary/AFL.automation.loading.ChemyxSyringePump.html#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.openConnection">openConnection() (AFL.automation.loading.ChemyxSyringePump.ChemyxConnection method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.OpticalTurbidity.html#AFL.automation.instrument.OpticalTurbidity.OpticalTurbidity">OpticalTurbidity (class in AFL.automation.instrument.OpticalTurbidity)</a>
@@ -3413,13 +3670,31 @@
         <li><a href="_autosummary/AFL.automation.shared.DiffractionLabeler.html#AFL.automation.shared.DiffractionLabeler.DiffractionLabelerModel.ordinal_phase_labels">(AFL.automation.shared.DiffractionLabeler.DiffractionLabelerModel method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_COMMAND_POLL_INTERVAL_SECONDS">OT2_COMMAND_POLL_INTERVAL_SECONDS (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver attribute)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_COMMAND_TIMEOUT_SECONDS">OT2_COMMAND_TIMEOUT_SECONDS (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver attribute)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.prepare.OT2_Driver.html#AFL.automation.prepare.OT2_Driver.OT2_Driver">OT2_Driver (class in AFL.automation.prepare.OT2_Driver)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_HTTP_CONNECT_TIMEOUT_SECONDS">OT2_HTTP_CONNECT_TIMEOUT_SECONDS (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver attribute)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_HTTP_READ_TIMEOUT_SECONDS">OT2_HTTP_READ_TIMEOUT_SECONDS (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver attribute)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_STOP_TIMEOUT_SECONDS">OT2_STOP_TIMEOUT_SECONDS (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver attribute)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_TERMINAL_COMMAND_STATES">OT2_TERMINAL_COMMAND_STATES (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver attribute)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_TERMINAL_RUN_STATES">OT2_TERMINAL_RUN_STATES (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver attribute)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.prepare.OT2DeckWebAppMixin.html#AFL.automation.prepare.OT2DeckWebAppMixin.OT2DeckWebAppMixin">OT2DeckWebAppMixin (class in AFL.automation.prepare.OT2DeckWebAppMixin)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver">OT2HTTPDriver (class in AFL.automation.prepare.OT2HTTPDriver)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.prepare.OT2Prepare.html#AFL.automation.prepare.OT2Prepare.OT2Prepare">OT2Prepare (class in AFL.automation.prepare.OT2Prepare)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.vision.OT2RidingCam.html#AFL.automation.vision.OT2RidingCam.OT2RidingCam">OT2RidingCam (class in AFL.automation.vision.OT2RidingCam)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -3447,7 +3722,11 @@
 </li>
       <li><a href="_autosummary/AFL.automation.shared.PersistentConfig.html#AFL.automation.shared.PersistentConfig.PersistentConfig">PersistentConfig (class in AFL.automation.shared.PersistentConfig)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.vision.PiCameraDriver.html#AFL.automation.vision.PiCameraDriver.PiCameraDriver">PiCameraDriver (class in AFL.automation.vision.PiCameraDriver)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.prepare.VirtualOT2HTTPDriver.html#AFL.automation.prepare.VirtualOT2HTTPDriver.VirtualOT2HTTPDriver.pick_up_tip">pick_up_tip() (AFL.automation.prepare.VirtualOT2HTTPDriver.VirtualOT2HTTPDriver method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.pickup_tip">pickup_tip() (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.loading.PiGPIO.html#AFL.automation.loading.PiGPIO.PiGPIO">PiGPIO (class in AFL.automation.loading.PiGPIO)</a>
 </li>
@@ -3483,8 +3762,18 @@
 </li>
       <li><a href="_autosummary/AFL.automation.loading.PneumaticSampleCell.html#AFL.automation.loading.PneumaticSampleCell.PneumaticSampleCell">PneumaticSampleCell (class in AFL.automation.loading.PneumaticSampleCell)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.position">position (AFL.automation.shared.motors.StepperMotor attribute)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.post_execute">post_execute() (AFL.automation.APIServer.Driver.Driver method)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.post_tiled_finalize">post_tiled_finalize() (AFL.automation.APIServer.Driver.Driver method)</a>
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.post_tiled_finalize">(AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.vision.RGBCamera.html#AFL.automation.vision.RGBCamera.RGBCamera.post_tiled_finalize">(AFL.automation.vision.RGBCamera.RGBCamera method)</a>
+</li>
+      </ul></li>
       <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.pre_execute">pre_execute() (AFL.automation.APIServer.Driver.Driver method)</a>
 
       <ul>
@@ -3496,8 +3785,6 @@
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.CHESSID3B.html#AFL.automation.instrument.CHESSID3B.CHESSID3B.pre_execute">(AFL.automation.instrument.CHESSID3B.CHESSID3B method)</a>
 </li>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.pre_execute">(AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
-</li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -3508,6 +3795,8 @@
 </li>
       </ul></li>
       <li><a href="_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.prepare">prepare() (AFL.automation.prepare.PrepareDriver.PrepareDriver method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.vision.ImageProcessing.html#AFL.automation.vision.ImageProcessing.ImageProcessing.prepare_background">prepare_background() (AFL.automation.vision.ImageProcessing.ImageProcessing method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver">PrepareDriver (class in AFL.automation.prepare.PrepareDriver)</a>
 </li>
@@ -3561,6 +3850,12 @@
 </li>
       <li><a href="_autosummary/AFL.automation.APIServer.data.html#AFL.automation.APIServer.data.DataPacket.PROTECTED_SYSTEM_KEYS">PROTECTED_SYSTEM_KEYS (AFL.automation.APIServer.data.DataPacket attribute)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.ProxyConnectionError">ProxyConnectionError</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.ProxyDriver">ProxyDriver (class in AFL.automation.APIServer.Driver)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.liveplot.html#AFL.automation.shared.liveplot.LivePlottingDriver.pull_campaign">pull_campaign() (AFL.automation.shared.liveplot.LivePlottingDriver method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.loading.PushPullSelectorSampleCell.html#AFL.automation.loading.PushPullSelectorSampleCell.PushPullSelectorSampleCell">PushPullSelectorSampleCell (class in AFL.automation.loading.PushPullSelectorSampleCell)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.shared.MutableQueue.html#AFL.automation.shared.MutableQueue.MutableQueue.put">put() (AFL.automation.shared.MutableQueue.MutableQueue method)</a>
@@ -3581,6 +3876,8 @@
         <li><a href="_autosummary/AFL.automation.APIServer.Client.html#AFL.automation.APIServer.Client.Client.query_driver">(AFL.automation.APIServer.Client.Client method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.ProxyDriver.query_proxy">query_proxy() (AFL.automation.APIServer.Driver.ProxyDriver method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.queue_state">queue_state() (AFL.automation.APIServer.APIServer method)</a>
 
       <ul>
@@ -3665,15 +3962,19 @@
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.BioSANS.html#AFL.automation.instrument.BioSANS.BioSANS.readFileSafely">readFileSafely() (AFL.automation.instrument.BioSANS.BioSANS method)</a>
 </li>
-      <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.readH5">readH5() (AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
+      <li><a href="_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS.readH5">readH5() (AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.reduce">reduce() (AFL.automation.instrument.ISISLARMOR.ISISLARMOR method)</a>
 
       <ul>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS.readH5">(AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS method)</a>
+        <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.reduce">(AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
 </li>
       </ul></li>
-      <li><a href="_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.reduce">reduce() (AFL.automation.instrument.ISISLARMOR.ISISLARMOR method)</a>
-</li>
       <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.reduced">reduced() (AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.vision.RGBCamera.html#AFL.automation.vision.RGBCamera.RGBCamera.refresh_background">refresh_background() (AFL.automation.vision.RGBCamera.RGBCamera method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.refresh_quickbar">refresh_quickbar() (AFL.automation.APIServer.Driver.Driver method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.shared.MutableQueue.html#AFL.automation.shared.MutableQueue.MutableQueue.remove">remove() (AFL.automation.shared.MutableQueue.MutableQueue method)</a>
 </li>
@@ -3757,8 +4058,6 @@
         <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.reset_sample">(AFL.automation.APIServer.Driver.Driver method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.reset_stocks">reset_stocks() (AFL.automation.mixcalc.MassBalanceDriver method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.loading.LoadStopperDriver.html#AFL.automation.loading.LoadStopperDriver.LoadStopperDriver.reset_stopper">reset_stopper() (AFL.automation.loading.LoadStopperDriver.LoadStopperDriver method)</a>
@@ -3773,6 +4072,8 @@
         <li><a href="_autosummary/AFL.automation.loading.TwoSelectorBlowoutSampleCell.html#AFL.automation.loading.TwoSelectorBlowoutSampleCell.TwoSelectorBlowoutSampleCell.reset_tank_levels">(AFL.automation.loading.TwoSelectorBlowoutSampleCell.TwoSelectorBlowoutSampleCell method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.reset_targets">reset_targets() (AFL.automation.mixcalc.MassBalanceDriver method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.prepare.OT2_Driver.html#AFL.automation.prepare.OT2_Driver.OT2_Driver.reset_tipracks">reset_tipracks() (AFL.automation.prepare.OT2_Driver.OT2_Driver method)</a>
@@ -3789,6 +4090,8 @@
         <li><a href="_autosummary/AFL.automation.prepare.PrepareDriver.html#AFL.automation.prepare.PrepareDriver.PrepareDriver.resolve_destination">(AFL.automation.prepare.PrepareDriver.PrepareDriver method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.shared.tiled.html#AFL.automation.shared.tiled.resolve_tiled_config">resolve_tiled_config() (in module AFL.automation.shared.tiled)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.loading.ChemyxSyringePump.html#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.restartPump">restartPump() (AFL.automation.loading.ChemyxSyringePump.ChemyxConnection method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.retrieve_obj">retrieve_obj() (AFL.automation.APIServer.APIServer method)</a>
@@ -3799,9 +4102,17 @@
         <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.retrieve_obj">(AFL.automation.APIServer.Driver.Driver method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.return_tip">return_tip() (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.APIServer.data.TiledClients.DriverTask.html#AFL.automation.APIServer.data.TiledClients.DriverTask.DriverTask.return_val">return_val (AFL.automation.APIServer.data.TiledClients.DriverTask.DriverTask property)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.shared.PersistentConfig.html#AFL.automation.shared.PersistentConfig.PersistentConfig.revert">revert() (AFL.automation.shared.PersistentConfig.PersistentConfig method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.TiledProxyDriver.html#AFL.automation.shared.TiledProxyDriver.rewrite_links">rewrite_links() (in module AFL.automation.shared.TiledProxyDriver)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.vision.ImageProcessing.html#AFL.automation.vision.ImageProcessing.ImageProcessing.rgb_values">rgb_values() (AFL.automation.vision.ImageProcessing.ImageProcessing method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.vision.RGBCamera.html#AFL.automation.vision.RGBCamera.RGBCamera">RGBCamera (class in AFL.automation.vision.RGBCamera)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.rinseAll">rinseAll() (AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell method)</a>
 
@@ -3861,6 +4172,10 @@
         <li><a href="_autosummary/AFL.automation.loading.TwoSelectorBlowoutSampleCell.html#AFL.automation.loading.TwoSelectorBlowoutSampleCell.TwoSelectorBlowoutSampleCell.rinseSyringe">(AFL.automation.loading.TwoSelectorBlowoutSampleCell.TwoSelectorBlowoutSampleCell method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.rotate_ccw">rotate_ccw() (AFL.automation.shared.motors.StepperMotor method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.rotate_cw">rotate_cw() (AFL.automation.shared.motors.StepperMotor method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.loading.RSoXSSolutionSampleCell.html#AFL.automation.loading.RSoXSSolutionSampleCell.RSoXSSolutionSampleCell">RSoXSSolutionSampleCell (class in AFL.automation.loading.RSoXSSolutionSampleCell)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.run">run() (AFL.automation.APIServer.APIServer method)</a>
@@ -3914,6 +4229,16 @@
       <li><a href="_autosummary/AFL.automation.APIServer.data.TiledClients.CatalogOfAFLEvents.html#AFL.automation.APIServer.data.TiledClients.CatalogOfAFLEvents.CatalogOfAFLEvents.sample_uuid">sample_uuid() (AFL.automation.APIServer.data.TiledClients.CatalogOfAFLEvents.CatalogOfAFLEvents method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.loading.SampleCell.html#AFL.automation.loading.SampleCell.SampleCell">SampleCell (class in AFL.automation.loading.SampleCell)</a>
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.shared.samplecells.html#AFL.automation.shared.samplecells.SampleCell">(class in AFL.automation.shared.samplecells)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/AFL.automation.shared.samplecells.html#AFL.automation.shared.samplecells.SampleCell.save_geometry_plot">save_geometry_plot() (AFL.automation.shared.samplecells.SampleCell method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.samplecells.html#AFL.automation.shared.samplecells.SampleCell.save_mask_comparison_plot">save_mask_comparison_plot() (AFL.automation.shared.samplecells.SampleCell method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.save_reference">save_reference() (AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.save_sweep_config">save_sweep_config() (AFL.automation.mixcalc.MassBalanceDriver method)</a>
 </li>
@@ -3931,6 +4256,8 @@
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.ScatteringInstrument.html#AFL.automation.instrument.ScatteringInstrument.ScatteringInstrument">ScatteringInstrument (class in AFL.automation.instrument.ScatteringInstrument)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.shared.samplecells.html#AFL.automation.shared.samplecells.ScrewCapVial">ScrewCapVial (class in AFL.automation.shared.samplecells)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis">SeabreezeUVVis (class in AFL.automation.instrument.SeabreezeUVVis)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.loading.CetoniMultiPosValve.html#AFL.automation.loading.CetoniMultiPosValve.CetoniMultiPosValve.selectPort">selectPort() (AFL.automation.loading.CetoniMultiPosValve.CetoniMultiPosValve method)</a>
@@ -3946,8 +4273,6 @@
       <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.send_1d_plot">send_1d_plot() (AFL.automation.APIServer.APIServer method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.send_array_as_jpg">send_array_as_jpg() (AFL.automation.APIServer.APIServer method)</a>
-</li>
-      <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SICSTelnetClient.send_cmd">send_cmd() (AFL.automation.instrument.SINQSANS.SICSTelnetClient method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.loading.UltimusVPressureController.html#AFL.automation.loading.UltimusVPressureController.UltimusVPressureController.send_command">send_command() (AFL.automation.loading.UltimusVPressureController.UltimusVPressureController method)</a>
 </li>
@@ -3981,12 +4306,18 @@
 </li>
       <li><a href="_autosummary/AFL.automation.shared.ServerDiscovery.html#AFL.automation.shared.ServerDiscovery.ServerDiscovery">ServerDiscovery (class in AFL.automation.shared.ServerDiscovery)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor">ServoMotor (class in AFL.automation.shared.motors)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor.set_angle">set_angle() (AFL.automation.shared.motors.ServoMotor method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.prepare.OT2_Driver.html#AFL.automation.prepare.OT2_Driver.OT2_Driver.set_aspirate_rate">set_aspirate_rate() (AFL.automation.prepare.OT2_Driver.OT2_Driver method)</a>
 
       <ul>
         <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_aspirate_rate">(AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.vision.ImageProcessing.html#AFL.automation.vision.ImageProcessing.ImageProcessing.set_background">set_background() (AFL.automation.vision.ImageProcessing.ImageProcessing method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.APIServer.Client.html#AFL.automation.APIServer.Client.Client.set_config">set_config() (AFL.automation.APIServer.Client.Client method)</a>
 
       <ul>
@@ -4015,6 +4346,14 @@
         <li><a href="_autosummary/AFL.automation.APIServer.Client.html#AFL.automation.APIServer.Client.Client.set_driver_object">(AFL.automation.APIServer.Client.Client method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_exposure">set_exposure() (AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_exposure_delay">set_exposure_delay() (AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_file_name">set_file_name() (AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_file_path">set_file_path() (AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.prepare.OT2_Driver.html#AFL.automation.prepare.OT2_Driver.OT2_Driver.set_gantry_speed">set_gantry_speed() (AFL.automation.prepare.OT2_Driver.OT2_Driver method)</a>
 
       <ul>
@@ -4041,8 +4380,6 @@
         <li><a href="_autosummary/AFL.automation.loading.VirtualPneumaticPressureLoader.html#AFL.automation.loading.VirtualPneumaticPressureLoader.NoOpPressureController.set_P">(AFL.automation.loading.VirtualPneumaticPressureLoader.NoOpPressureController method)</a>
 </li>
       </ul></li>
-      <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SICSTelnetClient.set_param">set_param() (AFL.automation.instrument.SINQSANS.SICSTelnetClient method)</a>
-</li>
       <li><a href="_autosummary/AFL.automation.instrument.VirtualSANS_data.html#AFL.automation.instrument.VirtualSANS_data.VirtualSANS_data.set_params_dict">set_params_dict() (AFL.automation.instrument.VirtualSANS_data.VirtualSANS_data method)</a>
 
       <ul>
@@ -4058,6 +4395,8 @@
 </li>
       </ul></li>
       <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.set_sample">set_sample() (AFL.automation.APIServer.Driver.Driver method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_save_single_scan">set_save_single_scan() (AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.set_sensor_config">set_sensor_config() (AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell method)</a>
 
@@ -4083,6 +4422,8 @@
         <li><a href="_autosummary/AFL.automation.sample_env.TemperatureDeck.html#AFL.automation.sample_env.TemperatureDeck.TemperatureDeck.set_temp">(AFL.automation.sample_env.TemperatureDeck.TemperatureDeck method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_tempmodule_temperature">set_tempmodule_temperature() (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Component.set_volume">set_volume() (AFL.automation.mixcalc.Component method)</a>
 
       <ul>
@@ -4126,8 +4467,6 @@
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setExposure">(AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
 </li>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.setExposure">(AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
-</li>
         <li><a href="_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS.setExposure">(AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS method)</a>
 </li>
       </ul></li>
@@ -4143,8 +4482,6 @@
         <li><a href="_autosummary/AFL.automation.instrument.CHESSID3B.html#AFL.automation.instrument.CHESSID3B.CHESSID3B.setFilename">(AFL.automation.instrument.CHESSID3B.CHESSID3B method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setFilename">(AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
-</li>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.setFilename">(AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
 </li>
       </ul></li>
       <li><a href="_autosummary/AFL.automation.instrument.APSUSAXS.html#AFL.automation.instrument.APSUSAXS.APSUSAXS.setFilenamePrefix">setFilenamePrefix() (AFL.automation.instrument.APSUSAXS.APSUSAXS method)</a>
@@ -4198,8 +4535,6 @@
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.CHESSID3B.html#AFL.automation.instrument.CHESSID3B.CHESSID3B.setReducedDataDir">(AFL.automation.instrument.CHESSID3B.CHESSID3B method)</a>
 </li>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.setReducedDataDir">(AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
-</li>
         <li><a href="_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS.setReducedDataDir">(AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS method)</a>
 </li>
       </ul></li>
@@ -4245,13 +4580,9 @@
         <li><a href="_autosummary/AFL.automation.loading.TwoSelectorBlowoutSampleCell.html#AFL.automation.loading.TwoSelectorBlowoutSampleCell.TwoSelectorBlowoutSampleCell.setWasteLevel">(AFL.automation.loading.TwoSelectorBlowoutSampleCell.TwoSelectorBlowoutSampleCell method)</a>
 </li>
       </ul></li>
-      <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SICSTelnetClient">SICSTelnetClient (class in AFL.automation.instrument.SINQSANS)</a>
-</li>
       <li><a href="_autosummary/AFL.automation.instrument.NicosScriptClient.html#AFL.automation.instrument.NicosScriptClient.NicosScriptClient.signal">signal() (AFL.automation.instrument.NicosScriptClient.NicosScriptClient method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.loading.SensorCallbackThread.html#AFL.automation.loading.SensorCallbackThread.SimpleThresholdCB">SimpleThresholdCB (class in AFL.automation.loading.SensorCallbackThread)</a>
-</li>
-      <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS">SINQSANS (class in AFL.automation.instrument.SINQSANS)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS">SINQSANS_NICOS (class in AFL.automation.instrument.SINQSANS_NICOS)</a>
 </li>
@@ -4285,9 +4616,13 @@
         <li><a href="_autosummary/AFL.automation.instrument.scatteringInterpolator.html#AFL.automation.instrument.scatteringInterpolator.Scattering_generator.standardize_data">(AFL.automation.instrument.scatteringInterpolator.Scattering_generator method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.vision.PiCameraDriver.html#AFL.automation.vision.PiCameraDriver.PiCameraDriver.start_streaming">start_streaming() (AFL.automation.vision.PiCameraDriver.PiCameraDriver method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.APIServer.data.TiledClients.DriverTask.html#AFL.automation.APIServer.data.TiledClients.DriverTask.DriverTask.start_time">start_time (AFL.automation.APIServer.data.TiledClients.DriverTask.DriverTask property)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.loading.ChemyxSyringePump.html#AFL.automation.loading.ChemyxSyringePump.ChemyxConnection.startPump">startPump() (AFL.automation.loading.ChemyxSyringePump.ChemyxConnection method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor.state">state (AFL.automation.shared.motors.ServoMotor attribute)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.static_dirs">static_dirs (AFL.automation.APIServer.Driver.Driver attribute)</a>
 </li>
@@ -4316,7 +4651,7 @@
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.ISISLARMOR.html#AFL.automation.instrument.ISISLARMOR.ISISLARMOR.status">(AFL.automation.instrument.ISISLARMOR.ISISLARMOR method)</a>
 </li>
-        <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SINQSANS.status">(AFL.automation.instrument.SINQSANS.SINQSANS method)</a>
+        <li><a href="_autosummary/AFL.automation.instrument.SeabreezeUVVis.html#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.status">(AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis method)</a>
 </li>
         <li><a href="_autosummary/AFL.automation.instrument.SINQSANS_NICOS.html#AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS.status">(AFL.automation.instrument.SINQSANS_NICOS.SINQSANS_NICOS method)</a>
 </li>
@@ -4354,7 +4689,23 @@
 </li>
         <li><a href="_autosummary/AFL.automation.sample_env.TemperatureDeck.html#AFL.automation.sample_env.TemperatureDeck.TemperatureDeck.status">(AFL.automation.sample_env.TemperatureDeck.TemperatureDeck method)</a>
 </li>
+        <li><a href="_autosummary/AFL.automation.shared.liveplot.html#AFL.automation.shared.liveplot.LivePlottingDriver.status">(AFL.automation.shared.liveplot.LivePlottingDriver method)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor.status">(AFL.automation.shared.motors.ServoMotor method)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.status">(AFL.automation.shared.motors.StepperMotor method)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.shared.TiledProxyDriver.html#AFL.automation.shared.TiledProxyDriver.TiledProxyDriver.status">(AFL.automation.shared.TiledProxyDriver.TiledProxyDriver method)</a>
+</li>
+        <li><a href="_autosummary/AFL.automation.vision.PiCameraDriver.html#AFL.automation.vision.PiCameraDriver.PiCameraDriver.status">(AFL.automation.vision.PiCameraDriver.PiCameraDriver method)</a>
+</li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.APIServer.html#AFL.automation.APIServer.APIServer.status_app">status_app() (AFL.automation.APIServer.APIServer method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.step_pin">step_pin (AFL.automation.shared.motors.StepperMotor attribute)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor">StepperMotor (class in AFL.automation.shared.motors)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalance.stock_components">stock_components (AFL.automation.mixcalc.MassBalance property)</a>
 
       <ul>
@@ -4395,6 +4746,8 @@
       </ul></li>
       <li><a href="_autosummary/AFL.automation.prepare.OT2HTTPDriver.html#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.stop_shaker_heat">stop_shaker_heat() (AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver method)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.vision.PiCameraDriver.html#AFL.automation.vision.PiCameraDriver.PiCameraDriver.stop_streaming">stop_streaming() (AFL.automation.vision.PiCameraDriver.PiCameraDriver method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.stopLoad">stopLoad() (AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell method)</a>
 
       <ul>
@@ -4418,8 +4771,6 @@
       <li><a href="_autosummary/AFL.automation.APIServer.data.html#AFL.automation.APIServer.data.DataTiled.subtransmit_array">subtransmit_array() (AFL.automation.APIServer.data.DataTiled method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.BalanceDiagnosis.success">success (AFL.automation.mixcalc.BalanceDiagnosis attribute)</a>
-</li>
-      <li><a href="_autosummary/AFL.automation.instrument.SINQSANS.html#AFL.automation.instrument.SINQSANS.SICSTelnetClient.success">success() (AFL.automation.instrument.SINQSANS.SICSTelnetClient method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.BalanceDiagnosis.summary">summary() (AFL.automation.mixcalc.BalanceDiagnosis method)</a>
 </li>
@@ -4551,6 +4902,18 @@
         <li><a href="_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_metadata">(AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_get_plot_manifest">tiled_get_plot_manifest() (AFL.automation.APIServer.Driver.Driver method)</a>
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_plot_manifest">(AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin method)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_get_plot_variable">tiled_get_plot_variable() (AFL.automation.APIServer.Driver.Driver method)</a>
+
+      <ul>
+        <li><a href="_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_plot_variable">(AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin method)</a>
+</li>
+      </ul></li>
       <li><a href="_autosummary/AFL.automation.APIServer.Driver.html#AFL.automation.APIServer.Driver.Driver.tiled_get_xarray_html">tiled_get_xarray_html() (AFL.automation.APIServer.Driver.Driver method)</a>
 
       <ul>
@@ -4583,6 +4946,10 @@
         <li><a href="_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_upload_dataset">(AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.shared.tiled.html#AFL.automation.shared.tiled.TiledConfigurationError">TiledConfigurationError</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.TiledProxyDriver.html#AFL.automation.shared.TiledProxyDriver.TiledProxyDriver">TiledProxyDriver (class in AFL.automation.shared.TiledProxyDriver)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.loading.PressureController.html#AFL.automation.loading.PressureController.PressureController.timed_dispense">timed_dispense() (AFL.automation.loading.PressureController.PressureController method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.BalanceDiagnosis.to_dict">to_dict() (AFL.automation.mixcalc.BalanceDiagnosis method)</a>
@@ -4593,6 +4960,8 @@
         <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.Solution.to_dict">(AFL.automation.mixcalc.Solution method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.vision.ImageProcessing.html#AFL.automation.vision.ImageProcessing.ImageProcessing.to_grayscale">to_grayscale() (AFL.automation.vision.ImageProcessing.ImageProcessing static method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.shared.units.html#AFL.automation.shared.units.to_quantity">to_quantity() (in module AFL.automation.shared.units)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.loading.LabJackRelay.html#AFL.automation.loading.LabJackRelay.LabJackRelay.toggleChannels">toggleChannels() (AFL.automation.loading.LabJackRelay.LabJackRelay method)</a>
@@ -4669,6 +5038,8 @@
 </li>
       <li><a href="_autosummary/AFL.automation.loading.Tubing.html#AFL.automation.loading.Tubing.Tubing">Tubing (class in AFL.automation.loading.Tubing)</a>
 </li>
+      <li><a href="_autosummary/AFL.automation.vision.ImageProcessing.html#AFL.automation.vision.ImageProcessing.ImageProcessing.turbidity_measurement">turbidity_measurement() (AFL.automation.vision.ImageProcessing.ImageProcessing method)</a>
+</li>
       <li><a href="_autosummary/AFL.automation.loading.TwoSelectorBlowoutSampleCell.html#AFL.automation.loading.TwoSelectorBlowoutSampleCell.TwoSelectorBlowoutSampleCell">TwoSelectorBlowoutSampleCell (class in AFL.automation.loading.TwoSelectorBlowoutSampleCell)</a>
 </li>
   </ul></td>
@@ -4744,6 +5115,8 @@
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.upload_stocks">upload_stocks() (AFL.automation.mixcalc.MassBalanceDriver method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MassBalanceDriver.upload_targets">upload_targets() (AFL.automation.mixcalc.MassBalanceDriver method)</a>
+</li>
+      <li><a href="_autosummary/AFL.automation.shared.TiledProxyDriver.html#AFL.automation.shared.TiledProxyDriver.TiledProxyDriver.upstream_request">upstream_request() (AFL.automation.shared.TiledProxyDriver.TiledProxyDriver method)</a>
 </li>
       <li><a href="_autosummary/AFL.automation.instrument.USBCamera.html#AFL.automation.instrument.USBCamera.USBCamera">USBCamera (class in AFL.automation.instrument.USBCamera)</a>
 </li>
@@ -4845,6 +5218,8 @@
         <li><a href="_autosummary/AFL.automation.mixcalc.html#AFL.automation.mixcalc.MixDB.write">(AFL.automation.mixcalc.MixDB method)</a>
 </li>
       </ul></li>
+      <li><a href="_autosummary/AFL.automation.shared.PersistentConfig.html#AFL.automation.shared.PersistentConfig.PersistentConfig.write_current_config">write_current_config() (AFL.automation.shared.PersistentConfig.PersistentConfig method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -4885,8 +5260,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
 
 
   
@@ -4909,7 +5284,6 @@
 
   <p class="sphinx-version">
     Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
-    <br/>
   </p>
 </div>
       
@@ -4922,7 +5296,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
 </p></div>
       
     </div>

@@ -1,0 +1,15 @@
+AFL.automation.shared.DatasetWidget
+===================================
+
+.. automodule:: AFL.automation.shared.DatasetWidget
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DatasetWidget
+      DatasetWidget_Model
+      DatasetWidget_View
+      defaultdict
+   

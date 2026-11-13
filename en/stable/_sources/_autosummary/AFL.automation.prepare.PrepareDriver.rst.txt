@@ -8,7 +8,9 @@ AFL.automation.prepare.PrepareDriver
 
    .. autosummary::
    
+      capture_task_video
       listify
+      wraps
    
    .. rubric:: Classes
 
@@ -17,6 +19,7 @@ AFL.automation.prepare.PrepareDriver
       MassBalance
       MassBalanceDriver
       PersistentConfig
+      PipetteAction
       PrepareDriver
       Solution
    

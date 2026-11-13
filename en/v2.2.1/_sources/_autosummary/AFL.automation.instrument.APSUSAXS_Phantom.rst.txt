@@ -1,0 +1,14 @@
+AFL.automation.instrument.APSUSAXS\_Phantom
+===========================================
+
+.. automodule:: AFL.automation.instrument.APSUSAXS_Phantom
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      APSUSAXS
+      APSUSAXS_Phantom
+      Driver
+   

@@ -1,0 +1,30 @@
+AFL.automation.shared
+=====================
+
+.. automodule:: AFL.automation.shared
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   DataLabelerWidget
+   DatasetWidget
+   DiffractionLabeler
+   MutableQueue
+   PersistentConfig
+   ServerDiscovery
+   TiledProxyDriver
+   exceptions
+   liveplot
+   mock_eic_client
+   motors
+   samplecells
+   serialization
+   tiled
+   units
+   utilities
+   warnings
+   widgetui

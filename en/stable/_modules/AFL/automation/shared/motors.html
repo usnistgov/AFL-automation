@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AFL.automation.shared.motors &#8212; AFL-automation  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/shared/motors';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../../_static/logo_light.svg"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
+
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
+  <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
+  
+
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/logo_text_large_light.svg" class="logo__image only-light" alt="AFL-automation  documentation - Home"/>
+    <img src="../../../../_static/logo_text_large_dark.svg" class="logo__image only-dark pst-js-only" alt="AFL-automation  documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../../automation.html" class="nav-link">AFL.automation</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">AFL.automation.shared.motors</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for AFL.automation.shared.motors</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;Reusable motor helpers with lazy-loaded Raspberry Pi dependencies.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">atexit</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">lazy_loader</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">lazy</span>
+
+
+<div class="viewcode-block" id="Motor">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.Motor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Motor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for reusable motor helpers.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str, optional</span>
+<span class="sd">        Logger name to use for this motor instance. If omitted, the class name is</span>
+<span class="sd">        used.</span>
+<span class="sd">    log_level : int or str, default=logging.INFO</span>
+<span class="sd">        Logging level for this motor instance. Accepts standard logging constants</span>
+<span class="sd">        or names such as ``&quot;DEBUG&quot;`` and ``&quot;INFO&quot;``.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    logger : logging.Logger</span>
+<span class="sd">        Logger used by derived motor classes.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Create a base motor logger for a custom helper class.</span>
+
+<span class="sd">    &gt;&gt;&gt; motor = Motor(name=&quot;gripper&quot;, log_level=&quot;DEBUG&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; motor.logger.name</span>
+<span class="sd">    &#39;gripper&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Motor.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.Motor.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">log_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">log_level</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ServoMotor">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ServoMotor</span><span class="p">(</span><span class="n">Motor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Control a PCA9685-backed hobby servo with lazy-loaded dependencies.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    channel : int, default=8</span>
+<span class="sd">        PCA9685 output channel that the servo signal wire is connected to.</span>
+<span class="sd">    address : int, default=0x40</span>
+<span class="sd">        I2C address of the PCA9685 board. Change this if the board address pins</span>
+<span class="sd">        are configured differently.</span>
+<span class="sd">    bus : int, default=1</span>
+<span class="sd">        I2C bus number on the host system. Use the bus your PCA9685 is wired to.</span>
+<span class="sd">    min_angle : int, default=0</span>
+<span class="sd">        Lowest allowed commanded angle in degrees.</span>
+<span class="sd">    max_angle : int, default=90</span>
+<span class="sd">        Highest allowed commanded angle in degrees.</span>
+<span class="sd">    open_angle : int, default=0</span>
+<span class="sd">        Angle treated as the open position for your mechanism.</span>
+<span class="sd">    close_angle : int, default=90</span>
+<span class="sd">        Angle treated as the closed position for your mechanism.</span>
+<span class="sd">    pulse_min : int, default=700</span>
+<span class="sd">        Minimum pulse width in microseconds for servo calibration.</span>
+<span class="sd">    pulse_max : int, default=2400</span>
+<span class="sd">        Maximum pulse width in microseconds for servo calibration.</span>
+<span class="sd">    channels : int, default=16</span>
+<span class="sd">        Number of channels exposed by the attached PCA9685 board.</span>
+<span class="sd">    default_speed : float, default=90.0</span>
+<span class="sd">        Default software ramp speed in degrees per second.</span>
+<span class="sd">    register_cleanup : bool, default=True</span>
+<span class="sd">        Register cleanup with ``atexit`` so the servo output is released on exit.</span>
+<span class="sd">    name : str, optional</span>
+<span class="sd">        Logger name override for this motor instance.</span>
+<span class="sd">    log_level : int or str, default=logging.INFO</span>
+<span class="sd">        Logging verbosity for this motor instance.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    channel : int</span>
+<span class="sd">        PCA9685 output channel used by the servo.</span>
+<span class="sd">    address : int</span>
+<span class="sd">        I2C address of the PCA9685 controller.</span>
+<span class="sd">    angle : int or None</span>
+<span class="sd">        Last commanded servo angle.</span>
+<span class="sd">    state : str</span>
+<span class="sd">        Human-readable servo state derived from the current angle.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Create a servo on channel 8 and move it to the configured open position.</span>
+
+<span class="sd">    &gt;&gt;&gt; servo = ServoMotor(channel=8, open_angle=5)</span>
+<span class="sd">    &gt;&gt;&gt; servo.open()</span>
+
+<span class="sd">    Move the servo to a specific angle at a limited speed.</span>
+
+<span class="sd">    &gt;&gt;&gt; servo.set_angle(45, speed=30.0)</span>
+<span class="sd">    &gt;&gt;&gt; servo.status()[&quot;state&quot;]</span>
+<span class="sd">    &#39;partial&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">DEFAULTS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;channel&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="mh">0x40</span><span class="p">,</span>
+        <span class="s2">&quot;bus&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;min_angle&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;max_angle&quot;</span><span class="p">:</span> <span class="mi">90</span><span class="p">,</span>
+        <span class="s2">&quot;open_angle&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;close_angle&quot;</span><span class="p">:</span> <span class="mi">90</span><span class="p">,</span>
+        <span class="s2">&quot;pulse_min&quot;</span><span class="p">:</span> <span class="mi">700</span><span class="p">,</span>
+        <span class="s2">&quot;pulse_max&quot;</span><span class="p">:</span> <span class="mi">2400</span><span class="p">,</span>
+        <span class="s2">&quot;channels&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+        <span class="s2">&quot;default_speed&quot;</span><span class="p">:</span> <span class="mf">90.0</span><span class="p">,</span>
+        <span class="s2">&quot;register_cleanup&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;log_level&quot;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+    <span class="p">}</span>
+
+<div class="viewcode-block" id="ServoMotor.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the servo motor helper.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Optional configuration overrides merged with :attr:`DEFAULTS`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">DEFAULTS</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">),</span> <span class="n">log_level</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;address&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bus</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;bus&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_angle</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;min_angle&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_angle</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;max_angle&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">open_angle</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;open_angle&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close_angle</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;close_angle&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulse_min</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;pulse_min&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulse_max</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;pulse_max&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;channels&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_speed</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;default_speed&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s2">&quot;unknown&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">servokit_module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;adafruit_servokit&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ModuleNotFoundError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span>
+                <span class="s2">&quot;ServoMotor requires adafruit-circuitpython-servokit to be installed.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">busio_module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;busio&quot;</span><span class="p">)</span>
+            <span class="n">board_module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;board&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ModuleNotFoundError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span>
+                <span class="s2">&quot;ServoMotor requires adafruit-blinka to be installed.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ServoKit</span> <span class="o">=</span> <span class="n">servokit_module</span><span class="o">.</span><span class="n">ServoKit</span>
+        <span class="n">i2c</span> <span class="o">=</span> <span class="n">busio_module</span><span class="o">.</span><span class="n">I2C</span><span class="p">(</span><span class="n">board_module</span><span class="o">.</span><span class="n">SCL</span><span class="p">,</span> <span class="n">board_module</span><span class="o">.</span><span class="n">SDA</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ServoKit</span><span class="p">(</span><span class="n">channels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">,</span> <span class="n">address</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">i2c</span><span class="o">=</span><span class="n">i2c</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kit</span><span class="o">.</span><span class="n">servo</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">]</span><span class="o">.</span><span class="n">set_pulse_width_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulse_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulse_max</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Initialized servo motor channel=</span><span class="si">%s</span><span class="s2"> address=</span><span class="si">%s</span><span class="s2"> bus=</span><span class="si">%s</span><span class="s2"> angle_range=(</span><span class="si">%s</span><span class="s2">,</span><span class="si">%s</span><span class="s2">) pulse_range=(</span><span class="si">%s</span><span class="s2">,</span><span class="si">%s</span><span class="s2">) default_speed=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bus</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min_angle</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_angle</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pulse_min</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pulse_max</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">default_speed</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;register_cleanup&quot;</span><span class="p">]:</span>
+            <span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cleanup</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ServoMotor.set_angle">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor.set_angle">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Move the servo to a target angle.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        angle : int</span>
+<span class="sd">            Target angle in degrees. Values are clamped to the configured</span>
+<span class="sd">            ``min_angle`` and ``max_angle``.</span>
+<span class="sd">        speed : float, default=0.0</span>
+<span class="sd">            Approximate angular speed in degrees per second. A value less than or</span>
+<span class="sd">            equal to zero applies the target angle immediately.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; servo = ServoMotor()</span>
+<span class="sd">        &gt;&gt;&gt; servo.set_angle(30)</span>
+<span class="sd">        &gt;&gt;&gt; servo.set_angle(60, speed=20.0)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">requested_angle</span> <span class="o">=</span> <span class="n">angle</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_angle</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_angle</span><span class="p">,</span> <span class="n">angle</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Servo set_angle requested=</span><span class="si">%s</span><span class="s2"> clamped=</span><span class="si">%s</span><span class="s2"> current=</span><span class="si">%s</span><span class="s2"> speed=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">requested_angle</span><span class="p">,</span>
+            <span class="n">angle</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span>
+            <span class="n">speed</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">speed</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kit</span><span class="o">.</span><span class="n">servo</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">]</span><span class="o">.</span><span class="n">angle</span> <span class="o">=</span> <span class="n">angle</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">angle</span> <span class="o">=</span> <span class="n">angle</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_from_angle</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Set servo channel </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="si">}</span><span class="s2"> to angle </span><span class="si">{</span><span class="n">angle</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">current_angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">angle</span> <span class="o">-</span> <span class="n">current_angle</span>
+        <span class="n">steps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">delta</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">steps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Servo already at requested angle </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">angle</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">speed</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">speed</span><span class="p">)</span>
+        <span class="n">step_delay</span> <span class="o">=</span> <span class="nb">max</span><span class="p">((</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">speed</span><span class="p">)</span> <span class="o">/</span> <span class="n">steps</span><span class="p">,</span> <span class="mf">0.005</span><span class="p">)</span>
+        <span class="n">step_direction</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">delta</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Servo ramping channel=</span><span class="si">%s</span><span class="s2"> delta=</span><span class="si">%s</span><span class="s2"> steps=</span><span class="si">%s</span><span class="s2"> step_direction=</span><span class="si">%s</span><span class="s2"> step_delay=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span>
+            <span class="n">delta</span><span class="p">,</span>
+            <span class="n">steps</span><span class="p">,</span>
+            <span class="n">step_direction</span><span class="p">,</span>
+            <span class="n">step_delay</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">steps</span><span class="p">):</span>
+            <span class="n">current_angle</span> <span class="o">+=</span> <span class="n">step_direction</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kit</span><span class="o">.</span><span class="n">servo</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">]</span><span class="o">.</span><span class="n">angle</span> <span class="o">=</span> <span class="n">current_angle</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">step_delay</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">angle</span> <span class="o">=</span> <span class="n">angle</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_from_angle</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Set servo channel </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="si">}</span><span class="s2"> to angle </span><span class="si">{</span><span class="n">angle</span><span class="si">}</span><span class="s2"> with speed </span><span class="si">{</span><span class="n">speed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ServoMotor.open">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor.open">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">speed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Move the servo to the configured open angle.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        speed : float, optional</span>
+<span class="sd">            Override for the configured default speed.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; servo = ServoMotor(open_angle=10)</span>
+<span class="sd">        &gt;&gt;&gt; servo.open()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resolved_speed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_speed</span> <span class="k">if</span> <span class="n">speed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">speed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Opening servo to angle=</span><span class="si">%s</span><span class="s2"> speed=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">open_angle</span><span class="p">,</span> <span class="n">resolved_speed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_angle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">open_angle</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="n">resolved_speed</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ServoMotor.close">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor.close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">speed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Move the servo to the configured closed angle.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        speed : float, optional</span>
+<span class="sd">            Override for the configured default speed.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; servo = ServoMotor(close_angle=80)</span>
+<span class="sd">        &gt;&gt;&gt; servo.close(speed=45.0)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resolved_speed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_speed</span> <span class="k">if</span> <span class="n">speed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">speed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Closing servo to angle=</span><span class="si">%s</span><span class="s2"> speed=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">close_angle</span><span class="p">,</span> <span class="n">resolved_speed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_angle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">close_angle</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="n">resolved_speed</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ServoMotor.status">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor.status">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the current servo state.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary containing the configured servo parameters and the last</span>
+<span class="sd">            commanded state.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; servo = ServoMotor()</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(servo.status(), dict)</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;state&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+            <span class="s2">&quot;angle&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span>
+            <span class="s2">&quot;channel&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span>
+            <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+            <span class="s2">&quot;bus&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus</span><span class="p">,</span>
+            <span class="s2">&quot;min_angle&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_angle</span><span class="p">,</span>
+            <span class="s2">&quot;max_angle&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_angle</span><span class="p">,</span>
+            <span class="s2">&quot;open_angle&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">open_angle</span><span class="p">,</span>
+            <span class="s2">&quot;close_angle&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">close_angle</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="ServoMotor.cleanup">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.ServoMotor.cleanup">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Release the servo output.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; servo = ServoMotor(register_cleanup=False)</span>
+<span class="sd">        &gt;&gt;&gt; servo.cleanup()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Cleaning up servo channel=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kit</span><span class="o">.</span><span class="n">servo</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">]</span><span class="o">.</span><span class="n">angle</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Servo cleanup failed&quot;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_state_from_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Map a servo angle to a human-readable state label.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        angle : int</span>
+<span class="sd">            Servo angle in degrees.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            ``&quot;open&quot;`` when the angle matches ``open_angle``, ``&quot;closed&quot;``</span>
+<span class="sd">            when it matches ``close_angle``, otherwise ``&quot;partial&quot;``.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; servo = ServoMotor(register_cleanup=False)</span>
+<span class="sd">        &gt;&gt;&gt; servo._state_from_angle(servo.open_angle)</span>
+<span class="sd">        &#39;open&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">angle</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">open_angle</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;open&quot;</span>
+        <span class="k">if</span> <span class="n">angle</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">close_angle</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;closed&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;partial&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="StepperMotor">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">StepperMotor</span><span class="p">(</span><span class="n">Motor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Control a GPIO-driven stepper motor using step and direction pins.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    step_pin : int, default=20</span>
+<span class="sd">        Raspberry Pi GPIO pin wired to the motor driver STEP input.</span>
+<span class="sd">    dir_pin : int, default=21</span>
+<span class="sd">        Raspberry Pi GPIO pin wired to the motor driver DIR input.</span>
+<span class="sd">    steps_per_rev : int, default=200</span>
+<span class="sd">        Full-step count per shaft revolution after accounting for driver</span>
+<span class="sd">        microstepping.</span>
+<span class="sd">    step_delay : float, default=0.001</span>
+<span class="sd">        Delay in seconds between GPIO transitions when stepping.</span>
+<span class="sd">    default_speed : float, default=1.0</span>
+<span class="sd">        Default rotation speed in revolutions per second.</span>
+<span class="sd">    mode : {&quot;BCM&quot;, &quot;BOARD&quot;}, default=&quot;BCM&quot;</span>
+<span class="sd">        Pin numbering scheme used when choosing ``step_pin`` and ``dir_pin``.</span>
+<span class="sd">    register_cleanup : bool, default=True</span>
+<span class="sd">        Register cleanup with ``atexit`` so GPIO pins are reset on exit.</span>
+<span class="sd">    name : str, optional</span>
+<span class="sd">        Logger name override for this motor instance.</span>
+<span class="sd">    log_level : int or str, default=logging.INFO</span>
+<span class="sd">        Logging verbosity for this motor instance.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    step_pin : int</span>
+<span class="sd">        GPIO pin used for the step signal.</span>
+<span class="sd">    dir_pin : int</span>
+<span class="sd">        GPIO pin used for the direction signal.</span>
+<span class="sd">    position : int</span>
+<span class="sd">        Current tracked position in steps.</span>
+<span class="sd">    connected : bool</span>
+<span class="sd">        Whether GPIO pins have been configured for output.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Connect a stepper and rotate it clockwise.</span>
+
+<span class="sd">    &gt;&gt;&gt; motor = StepperMotor(step_pin=20, dir_pin=21)</span>
+<span class="sd">    &gt;&gt;&gt; motor.connect()</span>
+<span class="sd">    &gt;&gt;&gt; motor.rotate_cw(0.5)</span>
+
+<span class="sd">    Rotate the motor counterclockwise with an explicit speed.</span>
+
+<span class="sd">    &gt;&gt;&gt; motor.rotate_ccw(1.0, speed=2.0)</span>
+<span class="sd">    &gt;&gt;&gt; motor.status()[&quot;connected&quot;]</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">DEFAULTS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;step_pin&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="s2">&quot;dir_pin&quot;</span><span class="p">:</span> <span class="mi">21</span><span class="p">,</span>
+        <span class="s2">&quot;steps_per_rev&quot;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+        <span class="s2">&quot;step_delay&quot;</span><span class="p">:</span> <span class="mf">0.001</span><span class="p">,</span>
+        <span class="s2">&quot;default_speed&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="s2">&quot;BCM&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;register_cleanup&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;log_level&quot;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+    <span class="p">}</span>
+
+<div class="viewcode-block" id="StepperMotor.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the stepper motor helper.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Optional configuration overrides merged with :attr:`DEFAULTS`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">DEFAULTS</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">),</span> <span class="n">log_level</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;log_level&quot;</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_pin</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;step_pin&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dir_pin</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;dir_pin&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_rev</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;steps_per_rev&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_delay</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;step_delay&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_speed</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;default_speed&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;mode&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span> <span class="o">=</span> <span class="n">lazy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;RPi.GPIO&quot;</span><span class="p">,</span> <span class="n">require</span><span class="o">=</span><span class="s2">&quot;AFL-automation[rpi-gpio]&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Initialized stepper motor step_pin=</span><span class="si">%s</span><span class="s2"> dir_pin=</span><span class="si">%s</span><span class="s2"> steps_per_rev=</span><span class="si">%s</span><span class="s2"> step_delay=</span><span class="si">%s</span><span class="s2"> default_speed=</span><span class="si">%s</span><span class="s2"> mode=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">step_pin</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dir_pin</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_rev</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">step_delay</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">default_speed</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;register_cleanup&quot;</span><span class="p">]:</span>
+            <span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cleanup</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StepperMotor.connect">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.connect">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Configure the GPIO pins for stepper control.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If ``mode`` is not ``&quot;BCM&quot;`` or ``&quot;BOARD&quot;``.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; motor = StepperMotor(mode=&quot;BCM&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; motor.connect()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Stepper already connected on STEP=</span><span class="si">%s</span><span class="s2"> DIR=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_pin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dir_pin</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Connecting stepper with mode=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">setwarnings</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;BCM&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">setmode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">BCM</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;BOARD&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">setmode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">BOARD</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid mode in StepperMotor&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step_pin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">OUT</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">LOW</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir_pin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">OUT</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">LOW</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Stepper motor connected on STEP=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">step_pin</span><span class="si">}</span><span class="s2"> DIR=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dir_pin</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StepperMotor.cleanup">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.cleanup">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reset the configured GPIO pins and mark the motor disconnected.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; motor = StepperMotor(register_cleanup=False)</span>
+<span class="sd">        &gt;&gt;&gt; motor.cleanup()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Stepper cleanup skipped because motor is not connected&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Cleaning up stepper STEP=</span><span class="si">%s</span><span class="s2"> DIR=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_pin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dir_pin</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step_pin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">LOW</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir_pin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">LOW</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">cleanup</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">step_pin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dir_pin</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Stepper cleanup failed&quot;</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="StepperMotor.rotate_cw">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.rotate_cw">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rotate_cw</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">rotations</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">speed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">step_delay</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Rotate the motor clockwise.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rotations : float</span>
+<span class="sd">            Number of shaft rotations to execute.</span>
+<span class="sd">        speed : float, optional</span>
+<span class="sd">            Rotational speed in revolutions per second.</span>
+<span class="sd">        step_delay : float, optional</span>
+<span class="sd">            Explicit delay between GPIO transitions. If provided, it overrides the</span>
+<span class="sd">            delay derived from ``speed``.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; motor = StepperMotor()</span>
+<span class="sd">        &gt;&gt;&gt; motor.connect()</span>
+<span class="sd">        &gt;&gt;&gt; motor.rotate_cw(0.25)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resolved_speed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_speed</span> <span class="k">if</span> <span class="n">speed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">speed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Requested clockwise rotation rotations=</span><span class="si">%s</span><span class="s2"> speed=</span><span class="si">%s</span><span class="s2"> step_delay=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">rotations</span><span class="p">,</span>
+            <span class="n">resolved_speed</span><span class="p">,</span>
+            <span class="n">step_delay</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_step</span><span class="p">(</span>
+            <span class="n">direction</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">HIGH</span><span class="p">,</span>
+            <span class="n">rotations</span><span class="o">=</span><span class="n">rotations</span><span class="p">,</span>
+            <span class="n">speed</span><span class="o">=</span><span class="n">resolved_speed</span><span class="p">,</span>
+            <span class="n">step_delay</span><span class="o">=</span><span class="n">step_delay</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StepperMotor.rotate_ccw">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.rotate_ccw">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rotate_ccw</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">rotations</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">speed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">step_delay</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Rotate the motor counterclockwise.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rotations : float</span>
+<span class="sd">            Number of shaft rotations to execute.</span>
+<span class="sd">        speed : float, optional</span>
+<span class="sd">            Rotational speed in revolutions per second.</span>
+<span class="sd">        step_delay : float, optional</span>
+<span class="sd">            Explicit delay between GPIO transitions. If provided, it overrides the</span>
+<span class="sd">            delay derived from ``speed``.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; motor = StepperMotor()</span>
+<span class="sd">        &gt;&gt;&gt; motor.connect()</span>
+<span class="sd">        &gt;&gt;&gt; motor.rotate_ccw(0.25, speed=1.5)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resolved_speed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_speed</span> <span class="k">if</span> <span class="n">speed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">speed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Requested counterclockwise rotation rotations=</span><span class="si">%s</span><span class="s2"> speed=</span><span class="si">%s</span><span class="s2"> step_delay=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">rotations</span><span class="p">,</span>
+            <span class="n">resolved_speed</span><span class="p">,</span>
+            <span class="n">step_delay</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_step</span><span class="p">(</span>
+            <span class="n">direction</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">LOW</span><span class="p">,</span>
+            <span class="n">rotations</span><span class="o">=</span><span class="n">rotations</span><span class="p">,</span>
+            <span class="n">speed</span><span class="o">=</span><span class="n">resolved_speed</span><span class="p">,</span>
+            <span class="n">step_delay</span><span class="o">=</span><span class="n">step_delay</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StepperMotor.home">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.home">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">home</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reset the tracked position to zero.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        This method only resets the software position counter. It does not move</span>
+<span class="sd">        the motor to a physical home switch.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; motor = StepperMotor()</span>
+<span class="sd">        &gt;&gt;&gt; motor.home()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Resetting stepper tracked position from </span><span class="si">%s</span><span class="s2"> to 0&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Stepper motor homed to position 0&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StepperMotor.status">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.shared.motors.html#AFL.automation.shared.motors.StepperMotor.status">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the current stepper configuration and tracked position.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary containing GPIO configuration, connection state, and</span>
+<span class="sd">            tracked position.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; motor = StepperMotor()</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(motor.status(), dict)</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;step_pin&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_pin</span><span class="p">,</span>
+            <span class="s2">&quot;dir_pin&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dir_pin</span><span class="p">,</span>
+            <span class="s2">&quot;steps_per_rev&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_rev</span><span class="p">,</span>
+            <span class="s2">&quot;step_delay&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_delay</span><span class="p">,</span>
+            <span class="s2">&quot;position_steps&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">,</span>
+            <span class="s2">&quot;position_rotations&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_rev</span><span class="p">,</span>
+            <span class="s2">&quot;connected&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="p">,</span>
+            <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_step</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">direction</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">rotations</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">speed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">step_delay</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Execute a low-level stepper move.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        direction : int</span>
+<span class="sd">            GPIO direction value written to ``dir_pin``.</span>
+<span class="sd">        rotations : float</span>
+<span class="sd">            Number of shaft rotations to convert into step pulses.</span>
+<span class="sd">        speed : float, optional</span>
+<span class="sd">            Rotational speed in revolutions per second. When positive, this is</span>
+<span class="sd">            used to derive ``step_delay``.</span>
+<span class="sd">        step_delay : float, optional</span>
+<span class="sd">            Explicit half-period delay between GPIO transitions. When omitted,</span>
+<span class="sd">            the delay is derived from ``speed`` or falls back to the configured</span>
+<span class="sd">            default.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            Raised when the stepper has not been connected before motion is</span>
+<span class="sd">            requested.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        This helper performs the actual GPIO pulse generation used by</span>
+<span class="sd">        :meth:`rotate_cw` and :meth:`rotate_ccw`.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; motor = StepperMotor(register_cleanup=False)</span>
+<span class="sd">        &gt;&gt;&gt; motor.connected = True</span>
+<span class="sd">        &gt;&gt;&gt; motor.position = 0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Stepper motor is not connected&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rotations</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Ignoring non-positive stepper rotation request: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">rotations</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">n_steps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">rotations</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_rev</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">n_steps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;Rounded stepper rotation request to zero steps rotations=</span><span class="si">%s</span><span class="s2"> steps_per_rev=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">rotations</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_rev</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">speed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">speed</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">step_delay</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_rev</span> <span class="o">*</span> <span class="n">speed</span><span class="p">)</span>
+        <span class="n">step_delay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_delay</span> <span class="k">if</span> <span class="n">step_delay</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">step_delay</span>
+        <span class="n">direction_name</span> <span class="o">=</span> <span class="s2">&quot;cw&quot;</span> <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">HIGH</span> <span class="k">else</span> <span class="s2">&quot;ccw&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Executing stepper motion direction=</span><span class="si">%s</span><span class="s2"> rotations=</span><span class="si">%s</span><span class="s2"> n_steps=</span><span class="si">%s</span><span class="s2"> speed=</span><span class="si">%s</span><span class="s2"> step_delay=</span><span class="si">%s</span><span class="s2"> start_position=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">direction_name</span><span class="p">,</span>
+            <span class="n">rotations</span><span class="p">,</span>
+            <span class="n">n_steps</span><span class="p">,</span>
+            <span class="n">speed</span><span class="p">,</span>
+            <span class="n">step_delay</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir_pin</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_steps</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step_pin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">HIGH</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">step_delay</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step_pin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">LOW</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">step_delay</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">GPIO</span><span class="o">.</span><span class="n">HIGH</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">+=</span> <span class="n">n_steps</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">-</span> <span class="n">n_steps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Completed stepper motion direction=</span><span class="si">%s</span><span class="s2"> end_position=</span><span class="si">%s</span><span class="s2"> end_rotations=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">direction_name</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_rev</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright : Contribution of the US Government.  Not subject to copyright in the United States..
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+
+  <!-- Taken from https://www.filamentgroup.com/lab/html-includes/#another-demo%3A-including-another-html-file -->
+  <iframe src="../../../../_static/ntd2d_menu.html" onload="this.before((this.contentDocument.body||this.contentDocument).children[0]);this.remove()"></iframe>
+  </body>
+</html>

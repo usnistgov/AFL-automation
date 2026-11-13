@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 
@@ -26,18 +25,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
     <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
@@ -46,32 +45,40 @@
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/APIServer/DriverWebAppsMixin';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
   
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
 
   <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
   <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
   
 
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -97,9 +104,9 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -191,7 +198,7 @@
         <div class="navbar-item navbar-persistent--container">
           
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -201,11 +208,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -218,8 +232,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -230,7 +243,7 @@
   
     <div class="navbar-persistent--mobile">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -251,7 +264,7 @@
       
         
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
         
 
@@ -320,11 +333,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -337,8 +357,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -378,7 +397,7 @@
     
     <li class="breadcrumb-item breadcrumb-home">
       <a href="../../../../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
+        <i class="fa-solid fa-house"></i>
       </a>
     </li>
     
@@ -405,102 +424,56 @@
                 <article class="bd-article">
                   
   <h1>Source code for AFL.automation.APIServer.DriverWebAppsMixin</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">import</span> <span class="nn">io</span>
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">pathlib</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
 
-<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">render_template</span>
-<span class="kn">from</span> <span class="nn">tiled.client</span> <span class="kn">import</span> <span class="n">from_uri</span>
-<span class="kn">from</span> <span class="nn">tiled.queries</span> <span class="kn">import</span> <span class="n">Contains</span><span class="p">,</span> <span class="n">In</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_template</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tiled.client</span><span class="w"> </span><span class="kn">import</span> <span class="n">from_uri</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tiled.queries</span><span class="w"> </span><span class="kn">import</span> <span class="n">Contains</span><span class="p">,</span> <span class="n">In</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.tiled</span><span class="w"> </span><span class="kn">import</span> <span class="n">TiledConfigurationError</span><span class="p">,</span> <span class="n">resolve_tiled_config</span>
 
 
 <div class="viewcode-block" id="DriverWebAppsMixin">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">DriverWebAppsMixin</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DriverWebAppsMixin</span><span class="p">:</span>
     <span class="n">TILED_RUN_DOCUMENTS_NODE</span> <span class="o">=</span> <span class="s1">&#39;run_documents&#39;</span>
 
 <div class="viewcode-block" id="DriverWebAppsMixin.tiled_browser">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_browser">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_browser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tiled_browser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Serve the Tiled database browser HTML interface.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;tiled_browser.html&#39;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;tiled_browser/tiled_browser.html&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DriverWebAppsMixin.tiled_plot">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_plot">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tiled_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Serve the Tiled plotting interface for selected entries.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;tiled_plot.html&#39;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;tiled_browser/tiled_plot.html&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DriverWebAppsMixin.tiled_gantt">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_gantt">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_gantt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tiled_gantt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Serve the Tiled Gantt chart interface for selected entries.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;tiled_gantt.html&#39;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;tiled_browser/tiled_gantt.html&#39;</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_read_tiled_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_read_tiled_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Internal helper to read Tiled config from ~/.afl/config.json.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict with status and config values or error message</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">config_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s1">&#39;.afl&#39;</span> <span class="o">/</span> <span class="s1">&#39;config.json&#39;</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">config_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Config file not found at ~/.afl/config.json. Please create this file with tiled_server and tiled_api_key settings.&#39;</span>
-            <span class="p">}</span>
-
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                <span class="n">config_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-        <span class="k">except</span> <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">tiled_server</span><span class="p">,</span> <span class="n">tiled_api_key</span> <span class="o">=</span> <span class="n">resolve_tiled_config</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">TiledConfigurationError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{</span>
                 <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Invalid JSON in config file: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
-            <span class="p">}</span>
-
-        <span class="c1"># Search through config entries (newest first) to find tiled settings</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">config_data</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Config file is empty.&#39;</span>
-            <span class="p">}</span>
-
-        <span class="c1"># Try entries in reverse sorted order to find one with tiled config</span>
-        <span class="c1"># Use datetime parsing to properly sort date keys (format: YY/DD/MM HH:MM:SS.ffffff)</span>
-        <span class="n">datetime_key_format</span> <span class="o">=</span> <span class="s1">&#39;%y/</span><span class="si">%d</span><span class="s1">/%m %H:%M:%S.</span><span class="si">%f</span><span class="s1">&#39;</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
-                <span class="n">config_data</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
-                <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">datetime_key_format</span><span class="p">),</span>
-                <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span>
-            <span class="p">)</span>
-        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="c1"># Fallback to lexicographic sort if datetime parsing fails</span>
-            <span class="n">keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">config_data</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">tiled_server</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-        <span class="n">tiled_api_key</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
-            <span class="n">entry</span> <span class="o">=</span> <span class="n">config_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="n">server</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tiled_server&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
-                <span class="n">api_key</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tiled_api_key&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">server</span> <span class="ow">and</span> <span class="n">api_key</span><span class="p">:</span>
-                    <span class="n">tiled_server</span> <span class="o">=</span> <span class="n">server</span>
-                    <span class="n">tiled_api_key</span> <span class="o">=</span> <span class="n">api_key</span>
-                    <span class="k">break</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">tiled_server</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;tiled_server not configured in ~/.afl/config.json. Please add a tiled_server URL to your config.&#39;</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">),</span>
             <span class="p">}</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">tiled_api_key</span><span class="p">:</span>
@@ -517,7 +490,7 @@
 
 <div class="viewcode-block" id="DriverWebAppsMixin.tiled_config">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_config">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tiled_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Tiled server configuration from shared config file.</span>
 
 <span class="sd">        Reads tiled_server and tiled_api_key from ~/.afl/config.json.</span>
@@ -528,7 +501,7 @@
 
 <div class="viewcode-block" id="DriverWebAppsMixin.tiled_upload_dataset">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_upload_dataset">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_upload_dataset</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tiled_upload_dataset</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">upload_bytes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -557,10 +530,10 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            dict with status/message and dataset summary.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-        <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-        <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
-        <span class="kn">from</span> <span class="nn">tiled.client.xarray</span> <span class="kn">import</span> <span class="n">write_xarray_dataset</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">tiled.client.xarray</span><span class="w"> </span><span class="kn">import</span> <span class="n">write_xarray_dataset</span>
 
         <span class="n">queued_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
         <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
@@ -669,7 +642,7 @@
                         <span class="k">if</span> <span class="n">header_from_last_comment</span> <span class="ow">and</span> <span class="n">comment_lines</span><span class="p">:</span>
                             <span class="n">comment_header_line</span> <span class="o">=</span> <span class="n">comment_lines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-                    <span class="k">def</span> <span class="nf">_resolve_table_separator</span><span class="p">():</span>
+                    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_table_separator</span><span class="p">():</span>
                         <span class="k">if</span> <span class="n">delimiter_token</span><span class="p">:</span>
                             <span class="k">if</span> <span class="n">delimiter_token</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;whitespace&#39;</span><span class="p">,</span> <span class="s1">&#39;space&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="s1">&#39;ws&#39;</span><span class="p">):</span>
                                 <span class="k">return</span> <span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\s+&#39;</span><span class="p">,</span> <span class="s1">&#39;python&#39;</span><span class="p">)</span>
@@ -733,7 +706,7 @@
                     <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span><span class="p">)</span>
 
                 <span class="c1"># Best-effort numeric coercion that preserves non-empty strings.</span>
-                <span class="k">def</span> <span class="nf">_coerce_series</span><span class="p">(</span><span class="n">series</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">_coerce_series</span><span class="p">(</span><span class="n">series</span><span class="p">):</span>
                     <span class="n">numeric</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">)</span>
                     <span class="n">nonempty_mask</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span>
                     <span class="c1"># Use numeric values when at least one non-empty value parsed and</span>
@@ -828,7 +801,7 @@
         <span class="p">}</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_get_tiled_client</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_tiled_client</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get or create cached Tiled client.</span>
 
 <span class="sd">        Returns:</span>
@@ -856,7 +829,7 @@
                 <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Failed to connect to Tiled: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
             <span class="p">}</span>
 
-    <span class="k">def</span> <span class="nf">_get_tiled_run_documents_container</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_tiled_run_documents_container</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get run_documents container, optionally creating it when missing.&quot;&quot;&quot;</span>
         <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
@@ -872,23 +845,55 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">client</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">TILED_RUN_DOCUMENTS_NODE</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">_normalize_run_document_entry_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_run_document_entry_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">):</span>
         <span class="n">entry_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">entry_id</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="n">prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">TILED_RUN_DOCUMENTS_NODE</span><span class="si">}</span><span class="s1">/&#39;</span>
         <span class="k">if</span> <span class="n">entry_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
             <span class="n">entry_id</span> <span class="o">=</span> <span class="n">entry_id</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">):]</span>
         <span class="k">return</span> <span class="n">entry_id</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_get_tiled_run_document_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_walk_tiled_descendants</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">container</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">container</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">if</span> <span class="n">prefix</span> <span class="k">else</span> <span class="n">key</span>
+            <span class="k">yield</span> <span class="n">path</span><span class="p">,</span> <span class="n">item</span>
+            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walk_tiled_descendants</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_tiled_run_document_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">):</span>
         <span class="n">normalized_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_run_document_entry_id</span><span class="p">(</span><span class="n">entry_id</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">normalized_id</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">entry_id</span><span class="p">)</span>
         <span class="n">container</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_run_documents_container</span><span class="p">(</span><span class="n">create</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">container</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">normalized_id</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">normalized_id</span><span class="p">,</span> <span class="n">container</span><span class="p">[</span><span class="n">normalized_id</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">_read_tiled_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="n">path_parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">part</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">normalized_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">part</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">path_parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="n">container</span>
+            <span class="n">traversed</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">path_parts</span><span class="p">:</span>
+                <span class="n">item</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="n">part</span><span class="p">]</span>
+                <span class="n">traversed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">traversed</span><span class="p">),</span> <span class="n">item</span>
+
+        <span class="k">if</span> <span class="n">normalized_id</span> <span class="ow">in</span> <span class="n">container</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">normalized_id</span><span class="p">,</span> <span class="n">container</span><span class="p">[</span><span class="n">normalized_id</span><span class="p">]</span>
+
+        <span class="n">matches</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walk_tiled_descendants</span><span class="p">(</span><span class="n">container</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">normalized_id</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">normalized_id</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_read_tiled_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a Tiled item, disabling wide-table optimization when supported.&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">item</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">optimize_wide_table</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -901,7 +906,7 @@
 
 <div class="viewcode-block" id="DriverWebAppsMixin.tiled_search">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_search">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queries</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tiled_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queries</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Proxy endpoint for Tiled metadata search to avoid CORS issues.</span>
 
 <span class="sd">        Args:</span>
@@ -922,14 +927,14 @@
         <span class="n">offset</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
         <span class="n">limit</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">_parse_json_param</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">default</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_parse_json_param</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">default</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;[]&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">default</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">value</span>
 
-        <span class="k">def</span> <span class="nf">_get_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_get_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
             <span class="n">current</span> <span class="o">=</span> <span class="n">obj</span>
             <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="n">part</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">current</span><span class="p">:</span>
@@ -937,14 +942,14 @@
                 <span class="n">current</span> <span class="o">=</span> <span class="n">current</span><span class="p">[</span><span class="n">part</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">current</span>
 
-        <span class="k">def</span> <span class="nf">_set_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_set_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
             <span class="n">current</span> <span class="o">=</span> <span class="n">obj</span>
             <span class="n">parts</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
                 <span class="n">current</span> <span class="o">=</span> <span class="n">current</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="p">{})</span>
             <span class="n">current</span><span class="p">[</span><span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">value</span>
 
-        <span class="k">def</span> <span class="nf">_parse_datetime_value</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_parse_datetime_value</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">None</span>
             <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
@@ -1073,7 +1078,7 @@
                             <span class="n">reverse</span> <span class="o">=</span> <span class="n">sort_dir</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span>
                             <span class="n">is_temporal</span> <span class="o">=</span> <span class="n">sort_key</span> <span class="ow">in</span> <span class="n">temporal_sort_fields</span>
 
-                            <span class="k">def</span> <span class="nf">_extract_sort_value</span><span class="p">(</span><span class="n">item_pair</span><span class="p">):</span>
+                            <span class="k">def</span><span class="w"> </span><span class="nf">_extract_sort_value</span><span class="p">(</span><span class="n">item_pair</span><span class="p">):</span>
                                 <span class="n">_</span><span class="p">,</span> <span class="n">item_obj</span> <span class="o">=</span> <span class="n">item_pair</span>
                                 <span class="n">metadata_obj</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">item_obj</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item_obj</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
                                 <span class="n">value_obj</span> <span class="o">=</span> <span class="n">_get_nested</span><span class="p">(</span><span class="n">metadata_obj</span><span class="p">,</span> <span class="n">sort_key</span><span class="p">)</span>
@@ -1178,7 +1183,7 @@
 
 <div class="viewcode-block" id="DriverWebAppsMixin.tiled_get_data">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_data">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tiled_get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Proxy endpoint to get xarray HTML representation from Tiled.</span>
 
 <span class="sd">        Args:</span>
@@ -1240,7 +1245,7 @@
 
 <div class="viewcode-block" id="DriverWebAppsMixin.tiled_get_xarray_html">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_xarray_html">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_get_xarray_html</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tiled_get_xarray_html</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return xarray _repr_html_() for one or more Tiled entries.</span>
 
 <span class="sd">        Reuses the combined-dataset cache shared with the plot manifest endpoint,</span>
@@ -1273,16 +1278,236 @@
         <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span> <span class="s1">&#39;html&#39;</span><span class="p">:</span> <span class="n">html</span><span class="p">}</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_classify_plot_dataarray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_array</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">sample_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_coord</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Classify a DataArray for plot UI selection.&quot;&quot;&quot;</span>
+        <span class="n">dims</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="s1">&#39;dims&#39;</span><span class="p">,</span> <span class="p">()))</span>
+        <span class="n">kind</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_coord</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sample_dim</span> <span class="ow">and</span> <span class="n">dims</span> <span class="o">==</span> <span class="p">[</span><span class="n">sample_dim</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="s1">&#39;sample_coord&#39;</span>
+            <span class="k">if</span> <span class="n">kind</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="s1">&#39;coord_string&#39;</span>
+            <span class="k">if</span> <span class="n">kind</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="s1">&#39;coord_numeric&#39;</span>
+            <span class="k">return</span> <span class="s1">&#39;coord_other&#39;</span>
+
+        <span class="k">if</span> <span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s1">&#39;meta&#39;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;scalar&#39;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sample_dim</span> <span class="ow">and</span> <span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">sample_dim</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s1">&#39;sample_1d&#39;</span>
+            <span class="k">return</span> <span class="s1">&#39;line_1d&#39;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sample_dim</span> <span class="ow">and</span> <span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">sample_dim</span><span class="p">:</span>
+                <span class="n">comp_dim</span> <span class="o">=</span> <span class="n">dims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">coord</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">comp_dim</span><span class="p">)</span>
+                <span class="n">coord_kind</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">coord</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="n">coord</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">coord_kind</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="s1">&#39;composition_2d&#39;</span>
+                <span class="k">return</span> <span class="s1">&#39;stacked_2d&#39;</span>
+            <span class="k">return</span> <span class="s1">&#39;image_2d&#39;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sample_dim</span> <span class="ow">and</span> <span class="n">dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">sample_dim</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s1">&#39;image_stack_3d&#39;</span>
+            <span class="k">return</span> <span class="s1">&#39;volume_3d&#39;</span>
+
+        <span class="k">return</span> <span class="s1">&#39;nd&#39;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_describe_plot_dataarray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">data_array</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">sample_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_coord</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Summarize a DataArray for the tiled plot manifest.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s1">&#39;dims&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="s1">&#39;dims&#39;</span><span class="p">,</span> <span class="p">())),</span>
+            <span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="s1">&#39;shape&#39;</span><span class="p">,</span> <span class="p">())],</span>
+            <span class="s1">&#39;kind&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;is_coord&#39;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">is_coord</span><span class="p">),</span>
+            <span class="s1">&#39;classification&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_classify_plot_dataarray</span><span class="p">(</span>
+                <span class="n">data_array</span><span class="p">,</span>
+                <span class="n">dataset</span><span class="p">,</span>
+                <span class="n">sample_dim</span><span class="o">=</span><span class="n">sample_dim</span><span class="p">,</span>
+                <span class="n">is_coord</span><span class="o">=</span><span class="n">is_coord</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_plot_sample_dim_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve the sample-dimension state used by plot serialization.&quot;&quot;&quot;</span>
+        <span class="n">sample_dim</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_detected_sample_dim&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sample_dim</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
+            <span class="n">sample_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_sample_dimension</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">allow_size_fallback</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">sample_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s1">&#39;_sample_count&#39;</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">sizes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sample_dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">sample_dim</span> <span class="k">else</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">))</span>
+        <span class="n">singleton_synthetic_sample_dim</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span>
+            <span class="n">sample_dim</span> <span class="ow">and</span> <span class="n">sample_count</span> <span class="o">&lt;=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_synthetic_singleton_sample_dim&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">sample_dim</span><span class="p">,</span> <span class="n">sample_count</span><span class="p">,</span> <span class="n">singleton_synthetic_sample_dim</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_plot_dataarray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">data_array</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">sample_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_coord</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Drop only the synthetic singleton sample axis before plotting.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">sample_dim</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="s1">&#39;dims&#39;</span><span class="p">,</span> <span class="p">()):</span>
+            <span class="k">return</span> <span class="n">data_array</span>
+        <span class="n">sample_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s1">&#39;_sample_count&#39;</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">sizes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sample_dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">sample_dim</span> <span class="k">else</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">))</span>
+        <span class="k">if</span> <span class="n">sample_count</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_synthetic_singleton_sample_dim&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">data_array</span>
+        <span class="k">if</span> <span class="n">is_coord</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">{</span><span class="n">sample_dim</span><span class="p">,</span> <span class="s1">&#39;sample_name&#39;</span><span class="p">,</span> <span class="s1">&#39;sample_uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;entry_id&#39;</span><span class="p">}:</span>
+            <span class="k">return</span> <span class="n">data_array</span>
+        <span class="k">return</span> <span class="n">data_array</span><span class="o">.</span><span class="n">isel</span><span class="p">({</span><span class="n">sample_dim</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_tiled_plot_manifest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a lightweight structural manifest for the tiled plot UI.&quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
+        <span class="n">sample_dim</span><span class="p">,</span> <span class="n">sample_count</span><span class="p">,</span> <span class="n">singleton_synthetic_sample_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_plot_sample_dim_state</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+        <span class="n">effective_sample_dim</span> <span class="o">=</span> <span class="n">sample_dim</span>
+        <span class="k">if</span> <span class="n">singleton_synthetic_sample_dim</span><span class="p">:</span>
+            <span class="n">effective_sample_dim</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">effective_sample_dim</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">sample_count</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># A lone physical axis (such as time or potential) is plottable data,</span>
+            <span class="c1"># not a sample dimension.</span>
+            <span class="n">effective_sample_dim</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">catalog</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">coord_name</span><span class="p">,</span> <span class="n">coord</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">normalized_coord</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_plot_dataarray</span><span class="p">(</span>
+                <span class="n">coord_name</span><span class="p">,</span> <span class="n">coord</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">sample_dim</span><span class="o">=</span><span class="n">sample_dim</span><span class="p">,</span> <span class="n">is_coord</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">catalog</span><span class="p">[</span><span class="n">coord_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe_plot_dataarray</span><span class="p">(</span>
+                <span class="n">coord_name</span><span class="p">,</span>
+                <span class="n">normalized_coord</span><span class="p">,</span>
+                <span class="n">dataset</span><span class="p">,</span>
+                <span class="n">sample_dim</span><span class="o">=</span><span class="n">effective_sample_dim</span><span class="p">,</span>
+                <span class="n">is_coord</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">data_array</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">normalized_data_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_plot_dataarray</span><span class="p">(</span>
+                <span class="n">var_name</span><span class="p">,</span> <span class="n">data_array</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">sample_dim</span><span class="o">=</span><span class="n">sample_dim</span><span class="p">,</span> <span class="n">is_coord</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">catalog</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe_plot_dataarray</span><span class="p">(</span>
+                <span class="n">var_name</span><span class="p">,</span>
+                <span class="n">normalized_data_array</span><span class="p">,</span>
+                <span class="n">dataset</span><span class="p">,</span>
+                <span class="n">sample_dim</span><span class="o">=</span><span class="n">effective_sample_dim</span><span class="p">,</span>
+                <span class="n">is_coord</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">dim_name</span><span class="p">,</span> <span class="n">dim_size</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">sizes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">dim_name</span> <span class="ow">in</span> <span class="n">catalog</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">synthetic_coord</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">dim_size</span><span class="p">)),</span>
+                <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="n">dim_name</span><span class="p">],</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">dim_name</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">catalog</span><span class="p">[</span><span class="n">dim_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe_plot_dataarray</span><span class="p">(</span>
+                <span class="n">dim_name</span><span class="p">,</span>
+                <span class="n">synthetic_coord</span><span class="p">,</span>
+                <span class="n">dataset</span><span class="p">,</span>
+                <span class="n">sample_dim</span><span class="o">=</span><span class="n">effective_sample_dim</span><span class="p">,</span>
+                <span class="n">is_coord</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;sample_dim&#39;</span><span class="p">:</span> <span class="n">effective_sample_dim</span><span class="p">,</span>
+            <span class="s1">&#39;sample_count&#39;</span><span class="p">:</span> <span class="n">sample_count</span> <span class="k">if</span> <span class="n">sample_dim</span> <span class="k">else</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s1">&#39;dims&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">sizes</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+            <span class="s1">&#39;catalog&#39;</span><span class="p">:</span> <span class="n">catalog</span><span class="p">,</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="DriverWebAppsMixin.tiled_get_plot_manifest">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_plot_manifest">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tiled_get_plot_manifest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a lightweight manifest describing the combined plot dataset.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_entry_ids_param</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Invalid entry_ids: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">entry_ids_list</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;entry_ids must contain at least one entry&#39;</span><span class="p">}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_or_create_combined_dataset</span><span class="p">(</span><span class="n">entry_ids_list</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error loading dataset: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">manifest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_tiled_plot_manifest</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error building plot manifest: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">}</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span> <span class="s1">&#39;manifest&#39;</span><span class="p">:</span> <span class="n">manifest</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="DriverWebAppsMixin.tiled_get_plot_variable">
+<a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_plot_variable">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tiled_get_plot_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return one variable or coordinate from the cached combined plot dataset.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">entry_ids_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_entry_ids_param</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Invalid entry_ids: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">entry_ids_list</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;entry_ids must contain at least one entry&#39;</span><span class="p">}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">var_name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;var_name is required&#39;</span><span class="p">}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_or_create_combined_dataset</span><span class="p">(</span><span class="n">entry_ids_list</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error loading dataset: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">}</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
+                <span class="n">data_array</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span>
+                <span class="n">is_coord</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+                <span class="n">data_array</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span>
+                <span class="n">is_coord</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Variable &quot;</span><span class="si">{</span><span class="n">var_name</span><span class="si">}</span><span class="s1">&quot; not found in combined dataset&#39;</span><span class="p">}</span>
+
+            <span class="n">sample_dim</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_plot_sample_dim_state</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+            <span class="n">data_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_plot_dataarray</span><span class="p">(</span>
+                <span class="n">var_name</span><span class="p">,</span> <span class="n">data_array</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">sample_dim</span><span class="o">=</span><span class="n">sample_dim</span><span class="p">,</span> <span class="n">is_coord</span><span class="o">=</span><span class="n">is_coord</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;variable&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">var_name</span><span class="p">,</span>
+                    <span class="s1">&#39;dims&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="s1">&#39;dims&#39;</span><span class="p">,</span> <span class="p">())),</span>
+                    <span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="s1">&#39;shape&#39;</span><span class="p">,</span> <span class="p">())],</span>
+                    <span class="s1">&#39;kind&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">),</span>
+                    <span class="s1">&#39;is_coord&#39;</span><span class="p">:</span> <span class="n">is_coord</span><span class="p">,</span>
+                    <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_safe_tolist</span><span class="p">(</span><span class="n">data_array</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Error serializing variable &quot;</span><span class="si">{</span><span class="n">var_name</span><span class="si">}</span><span class="s1">&quot;: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">}</span></div>
+
+
 <div class="viewcode-block" id="DriverWebAppsMixin.tiled_get_full_json">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_full_json">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_get_full_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tiled_get_full_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Proxy endpoint to get JSON-serializable full data payload for one entry.</span>
 
 <span class="sd">        This endpoint is intended as a same-origin fallback for browser clients</span>
 <span class="sd">        when direct browser-&gt;Tiled CORS access is not available.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-        <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
         <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_client</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
@@ -1348,7 +1573,7 @@
 
 <div class="viewcode-block" id="DriverWebAppsMixin.tiled_get_metadata">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_metadata">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tiled_get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Proxy endpoint to get metadata from Tiled.</span>
 
 <span class="sd">        Args:</span>
@@ -1387,7 +1612,7 @@
 
 <div class="viewcode-block" id="DriverWebAppsMixin.tiled_get_distinct_values">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_get_distinct_values">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_get_distinct_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tiled_get_distinct_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get distinct/unique values for a metadata field using Tiled&#39;s distinct() method.</span>
 
 <span class="sd">        Args:</span>
@@ -1437,7 +1662,7 @@
             <span class="p">}</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_fetch_single_tiled_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fetch_single_tiled_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_id</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Fetch a single entry from Tiled and extract metadata.</span>
 
 <span class="sd">        Parameters</span>
@@ -1462,12 +1687,12 @@
 <span class="sd">            If entry_id is not found in Tiled</span>
 <span class="sd">            If dataset cannot be read</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">normalized_id</span><span class="p">,</span> <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tiled_run_document_item</span><span class="p">(</span><span class="n">entry_id</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Entry &quot;</span><span class="si">{</span><span class="n">entry_id</span><span class="si">}</span><span class="s1">&quot; not found in tiled </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">TILED_RUN_DOCUMENTS_NODE</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Entry &quot;</span><span class="si">{</span><span class="n">entry_id</span><span class="si">}</span><span class="s1">&quot; not found in tiled </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">TILED_RUN_DOCUMENTS_NODE</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
 
         <span class="c1"># Fetch dataset with wide-table optimization disabled for xarray clients.</span>
         <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_tiled_item</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
@@ -1534,7 +1759,7 @@
 
         <span class="k">return</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">metadata</span>
 
-    <span class="k">def</span> <span class="nf">_detect_sample_dimension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">allow_size_fallback</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_detect_sample_dimension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">allow_size_fallback</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Detect the sample dimension from a dataset.</span>
 <span class="sd">        </span>
 <span class="sd">        Looks for dimensions matching patterns like &#39;*_sample&#39; or &#39;sample&#39;.</span>
@@ -1554,7 +1779,7 @@
 <span class="sd">        str or None</span>
 <span class="sd">            The detected sample dimension name, or None if not found</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">re</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
         
         <span class="c1"># Pattern priority: exact &#39;sample&#39;, then &#39;*_sample&#39;, then first multi-valued dim</span>
         <span class="n">dims</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">sizes</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
@@ -1581,7 +1806,7 @@
 
 <div class="viewcode-block" id="DriverWebAppsMixin.tiled_concat_datasets">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.APIServer.DriverWebAppsMixin.html#AFL.automation.APIServer.DriverWebAppsMixin.DriverWebAppsMixin.tiled_concat_datasets">[docs]</a>
-    <span class="k">def</span> <span class="nf">tiled_concat_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="n">concat_dim</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="n">variable_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tiled_concat_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">,</span> <span class="n">concat_dim</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="n">variable_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Gather datasets from Tiled entries and concatenate them along a dimension.</span>
 
 <span class="sd">        This method fetches multiple datasets from a Tiled server, extracts metadata</span>
@@ -1622,8 +1847,8 @@
 <span class="sd">            If any entry_id is not found in Tiled</span>
 <span class="sd">            If datasets cannot be fetched or concatenated</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
-        <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">entry_ids</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;entry_ids list cannot be empty&quot;</span><span class="p">)</span>
@@ -1644,44 +1869,34 @@
 
         <span class="c1"># SINGLE ENTRY CASE: Return dataset as-is with metadata added</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">datasets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            
-            <span class="c1"># Detect the sample dimension from the dataset</span>
-            <span class="c1"># For single entries, avoid guessing a random axis as &quot;sample&quot;.</span>
-            <span class="n">sample_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_sample_dimension</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">allow_size_fallback</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">sample_dim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="c1"># Ensure plotter paths have a sample dimension even for one entry.</span>
-                <span class="c1"># Use concat_dim for consistency with multi-entry flow.</span>
-                <span class="n">sample_dim</span> <span class="o">=</span> <span class="n">concat_dim</span>
-                <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">({</span><span class="n">sample_dim</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]})</span>
-                <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">({</span>
-                    <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">sample_dim</span><span class="p">,</span> <span class="p">[</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_name&#39;</span><span class="p">]]),</span>
-                    <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">sample_dim</span><span class="p">,</span> <span class="p">[</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">]]),</span>
-                    <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">sample_dim</span><span class="p">,</span> <span class="p">[</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;entry_id&#39;</span><span class="p">]]),</span>
-                <span class="p">})</span>
-            
-            <span class="c1"># Add metadata as dataset attributes (not coordinates, since we don&#39;t have a new dim)</span>
+            <span class="c1"># Use the same outer index as multi-entry data. Serialization removes</span>
+            <span class="c1"># this artificial singleton axis before the browser plots it.</span>
+            <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">({</span><span class="n">concat_dim</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]})</span>
+            <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">assign_coords</span><span class="p">({</span>
+                <span class="s1">&#39;sample_name&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">concat_dim</span><span class="p">,</span> <span class="p">[</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_name&#39;</span><span class="p">]]),</span>
+                <span class="s1">&#39;sample_uuid&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">concat_dim</span><span class="p">,</span> <span class="p">[</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">]]),</span>
+                <span class="s1">&#39;entry_id&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">concat_dim</span><span class="p">,</span> <span class="p">[</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;entry_id&#39;</span><span class="p">]]),</span>
+            <span class="p">})</span>
             <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;sample_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_name&#39;</span><span class="p">]</span>
             <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">]</span>
             <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;entry_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;entry_id&#39;</span><span class="p">]</span>
-            <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;_detected_sample_dim&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_dim</span>
-            
-            <span class="c1"># If sample_composition exists, add it as a DataArray along the sample dimension</span>
-            <span class="k">if</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">sample_dim</span><span class="p">:</span>
+            <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;_detected_sample_dim&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">concat_dim</span>
+            <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;_sample_count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;_synthetic_singleton_sample_dim&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="k">if</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">]:</span>
                 <span class="n">components</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">][</span><span class="s1">&#39;components&#39;</span><span class="p">]</span>
                 <span class="n">values</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">]</span>
-                
-                <span class="c1"># Check if composition already exists in dataset (common case)</span>
-                <span class="c1"># If not, we could add it, but for single entry this is usually already there</span>
                 <span class="k">if</span> <span class="s1">&#39;composition&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
-                    <span class="c1"># Create composition array - but we need to match the sample dimension size</span>
-                    <span class="c1"># This is tricky for single entry since composition is per-sample</span>
-                    <span class="c1"># For now, store in attrs</span>
-                    <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                        <span class="s1">&#39;components&#39;</span><span class="p">:</span> <span class="n">components</span><span class="p">,</span>
-                        <span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="n">values</span>
-                    <span class="p">}</span>
+                    <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">composition</span><span class="o">=</span><span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span>
+                        <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">values</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+                        <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="n">concat_dim</span><span class="p">,</span> <span class="s1">&#39;components&#39;</span><span class="p">],</span>
+                        <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="n">concat_dim</span><span class="p">:</span> <span class="n">dataset</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">concat_dim</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="s1">&#39;components&#39;</span><span class="p">:</span> <span class="n">components</span><span class="p">},</span>
+                        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;composition&#39;</span><span class="p">,</span>
+                    <span class="p">))</span>
+                <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;sample_composition&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;components&#39;</span><span class="p">:</span> <span class="n">components</span><span class="p">,</span> <span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="n">values</span><span class="p">}</span>
             
             <span class="c1"># Apply variable prefix if specified</span>
             <span class="k">if</span> <span class="n">variable_prefix</span><span class="p">:</span>
@@ -1755,6 +1970,10 @@
         <span class="k">if</span> <span class="n">compositions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">concatenated</span> <span class="o">=</span> <span class="n">concatenated</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">composition</span><span class="o">=</span><span class="n">compositions</span><span class="p">)</span>
 
+        <span class="n">concatenated</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;_detected_sample_dim&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">concat_dim</span>
+        <span class="n">concatenated</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;_sample_count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">datasets</span><span class="p">)</span>
+        <span class="n">concatenated</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;_synthetic_singleton_sample_dim&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
         <span class="c1"># Prefix names (data vars, coords, dims) but NOT the concat_dim itself</span>
         <span class="k">if</span> <span class="n">variable_prefix</span><span class="p">:</span>
             <span class="n">rename_dict</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1786,7 +2005,7 @@
         <span class="k">return</span> <span class="n">concatenated</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_parse_entry_ids_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_entry_ids_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse entry_ids parameter from JSON string or list.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">parsed</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">entry_ids</span><span class="p">)</span>
@@ -1796,11 +2015,11 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;entry_ids must be a JSON array or list&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">parsed</span>
 
-    <span class="k">def</span> <span class="nf">_entry_ids_cache_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids_list</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_entry_ids_cache_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids_list</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a stable cache key from ordered entry IDs.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">entry_ids_list</span><span class="p">,</span> <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">_cache_put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">max_items</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cache_put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">max_items</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Put value into bounded insertion-ordered cache.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">cache</span><span class="p">:</span>
             <span class="n">cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
@@ -1815,8 +2034,18 @@
             <span class="n">old_key</span> <span class="o">=</span> <span class="n">order</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">cache</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">old_key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_get_or_create_combined_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids_list</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_combined_dataset_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize combined-dataset cache state for bare mixin test doubles.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_combined_dataset_cache&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combined_dataset_cache</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_combined_dataset_cache</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_combined_dataset_cache_order&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combined_dataset_cache_order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_combined_dataset_cache_order</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_max_combined_dataset_cache&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_combined_dataset_cache</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_combined_dataset_cache</span> <span class="o">=</span> <span class="mi">3</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_or_create_combined_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_ids_list</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get combined dataset from cache or create and cache it.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_combined_dataset_cache</span><span class="p">()</span>
         <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entry_ids_cache_key</span><span class="p">(</span><span class="n">entry_ids_list</span><span class="p">)</span>
         <span class="n">cached</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combined_dataset_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1837,9 +2066,9 @@
 
         <span class="k">return</span> <span class="n">combined_dataset</span>
 
-    <span class="k">def</span> <span class="nf">_sanitize_for_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sanitize_for_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively replace NaN/Inf with None for JSON compatibility.&quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">math</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_sanitize_for_json</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
@@ -1848,10 +2077,10 @@
             <span class="k">return</span> <span class="n">obj</span>
         <span class="k">return</span> <span class="n">obj</span>
 
-    <span class="k">def</span> <span class="nf">_safe_tolist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_safe_tolist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert numpy array to JSON-serializable list.&quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-        <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
@@ -1893,8 +2122,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
 
 
   
@@ -1917,7 +2146,6 @@
 
   <p class="sphinx-version">
     Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
-    <br/>
   </p>
 </div>
       
@@ -1930,7 +2158,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
 </p></div>
       
     </div>

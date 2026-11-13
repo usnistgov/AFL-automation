@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 
@@ -27,18 +26,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/ntd2d.css?v=525a25f0" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
@@ -47,6 +46,7 @@
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../_static/_static/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_autosummary/AFL.automation.instrument.SeabreezeUVVis';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -54,27 +54,34 @@
     <link rel="prev" title="AFL.automation.instrument.ScatteringInstrument" href="AFL.automation.instrument.ScatteringInstrument.html" />
   
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
 
   <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
   <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
   
 
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -100,9 +107,9 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -194,7 +201,7 @@
         <div class="navbar-item navbar-persistent--container">
           
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -204,11 +211,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -221,8 +235,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -233,7 +246,7 @@
   
     <div class="navbar-persistent--mobile">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -242,7 +255,7 @@
   
 
   
-    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
       <span class="fa-solid fa-outdent"></span>
     </button>
   
@@ -256,7 +269,7 @@
       
       
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
@@ -325,11 +338,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -342,8 +362,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -352,7 +371,15 @@
   </div>
   
     <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
         <div class="sidebar-primary-item">
+
 <nav class="bd-docs-nav bd-links"
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
@@ -380,10 +407,9 @@
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.NicosScriptClient.html">AFL.automation.instrument.NicosScriptClient</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.OpticalTurbidity.html">AFL.automation.instrument.OpticalTurbidity</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.PySpecClient.html">AFL.automation.instrument.PySpecClient</a></li>
-<li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.SINQSANS.html">AFL.automation.instrument.SINQSANS</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.SINQSANS_NICOS.html">AFL.automation.instrument.SINQSANS_NICOS</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.ScatteringInstrument.html">AFL.automation.instrument.ScatteringInstrument</a></li>
-<li class="toctree-l4 current active"><a class="current reference internal" href="#">AFL.automation.instrument.SeabreezeUVVis</a></li>
+<li class="toctree-l4 current active"><a aria-current="page" class="current reference internal" href="#">AFL.automation.instrument.SeabreezeUVVis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.SpecScreen_Driver.html">AFL.automation.instrument.SpecScreen_Driver</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.USBCamera.html">AFL.automation.instrument.USBCamera</a></li>
 <li class="toctree-l4"><a class="reference internal" href="AFL.automation.instrument.VirtualInstrument.html">AFL.automation.instrument.VirtualInstrument</a></li>
@@ -439,7 +465,7 @@
     
     <li class="breadcrumb-item breadcrumb-home">
       <a href="../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
+        <i class="fa-solid fa-house"></i>
       </a>
     </li>
     
@@ -473,106 +499,616 @@
                   
   <section id="module-AFL.automation.instrument.SeabreezeUVVis">
 <span id="afl-automation-instrument-seabreezeuvvis"></span><h1>AFL.automation.instrument.SeabreezeUVVis<a class="headerlink" href="#module-AFL.automation.instrument.SeabreezeUVVis" title="Link to this heading">#</a></h1>
+<p>Driver for Ocean Optics UV-Vis spectrometers supported by SeaBreeze.</p>
 <p class="rubric">Classes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Driver</span></code>(name[, defaults, overrides, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Eq</span></code>(key, value)</p></td>
-<td><p>Query equality of a given key's value to the specified value.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Path</span></code>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Path</span></code>(*args, **kwargs)</p></td>
 <td><p>PurePath subclass that can make system calls.</p></td>
 </tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Real</span></code>()</p></td>
+<td><p>To Complex, Real adds the operations that work on real numbers.</p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SeabreezeUVVis</span></code></a>([backend, device_serial, ...])</p></td>
-<td><p></p></td>
+<td><p>Collect spectra from a SeaBreeze-compatible UV-Vis spectrometer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">suppress</span></code>(*exceptions)</p></td>
+<td><p>Context manager to suppress specified exceptions</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.instrument.SeabreezeUVVis.</span></span><span class="sig-name descname"><span class="pre">SeabreezeUVVis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cseabreeze'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_serial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis" title="Link to this definition">#</a></dt>
-<dd><dl class="py attribute">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.instrument.SeabreezeUVVis.</span></span><span class="sig-name descname"><span class="pre">SeabreezeUVVis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'cseabreeze'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_serial</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis" title="Link to this definition">#</a></dt>
+<dd><p>Collect spectra from a SeaBreeze-compatible UV-Vis spectrometer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>correct_dark_counts</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – Pass SeaBreeze’s device-specific dark-count correction option to each
+acquired spectrum. This is separate from the stored <code class="docutils literal notranslate"><span class="pre">dark</span></code> spectrum
+used for transmission reduction.</p></li>
+<li><p><strong>correct_nonlinearity</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – Pass SeaBreeze’s detector nonlinearity correction option to each
+acquired spectrum when supported by the device.</p></li>
+<li><p><strong>exposure</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>default=0.010</em>) – Spectrometer integration time in seconds.</p></li>
+<li><p><strong>exposure_delay</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>default=0</em>) – Additional delay in seconds between consecutively acquired frames.</p></li>
+<li><p><strong>save_single_scan</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – Whether acquired spectra are also written to the configured HDF5 file.</p></li>
+<li><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>default=&quot;test.h5&quot;</em>) – HDF5 file name used when <code class="docutils literal notranslate"><span class="pre">save_single_scan</span></code> is enabled.</p></li>
+<li><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><em>pathlib.Path</em></a><em>, </em><em>default=&quot;.&quot;</em>) – Directory containing the HDF5 file written when <code class="docutils literal notranslate"><span class="pre">save_single_scan</span></code>
+is enabled.</p></li>
+<li><p><strong>reference</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>default=&quot;AFL_HOME/uvvis/reference_spectrum.npz&quot;</em>) – Illuminated reference path. A value ending in <code class="docutils literal notranslate"><span class="pre">.npz</span></code> is a local
+file path; any other non-empty value is a Tiled <code class="docutils literal notranslate"><span class="pre">run_documents</span></code>
+entry ID.</p></li>
+<li><p><strong>air</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>default=&quot;AFL_HOME/uvvis/air_reference_spectrum.npz&quot;</em>) – Optional air-reference locator used to report the <code class="docutils literal notranslate"><span class="pre">mean_air</span></code>
+diagnostic. Local and Tiled values are selected as for <code class="docutils literal notranslate"><span class="pre">reference</span></code>.</p></li>
+<li><p><strong>dark</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>default=&quot;AFL_HOME/uvvis/dark_spectrum.npz&quot;</em>) – Dark-spectrum locator subtracted from sample and reference spectra
+when dark-spectrum subtraction is enabled. Local and Tiled values are
+selected as for <code class="docutils literal notranslate"><span class="pre">reference</span></code>.</p></li>
+<li><p><strong>use_dark_spectrum</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – Whether to subtract the stored dark spectrum from sample and reference
+spectra during transmission reduction.</p></li>
+<li><p><strong>transmission_denominator_epsilon</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>default=1e-3</em>) – Minimum magnitude used for the dark-corrected reference denominator.
+This prevents a nearly identical reference and dark spectrum from
+creating an unstable transmission ratio.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
 <dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.defaults">
-<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'air_uuid':</span> <span class="pre">'',</span> <span class="pre">'correctDarkCounts':</span> <span class="pre">False,</span> <span class="pre">'correctNonlinearity':</span> <span class="pre">False,</span> <span class="pre">'exposure':</span> <span class="pre">0.01,</span> <span class="pre">'exposure_delay':</span> <span class="pre">0,</span> <span class="pre">'filename':</span> <span class="pre">'test.h5',</span> <span class="pre">'filepath':</span> <span class="pre">'.',</span> <span class="pre">'reference_uuid':</span> <span class="pre">'',</span> <span class="pre">'saveSingleScan':</span> <span class="pre">False}</span></em><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.defaults" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'air':</span> <span class="pre">'air_reference_spectrum.npz',</span> <span class="pre">'correct_dark_counts':</span> <span class="pre">False,</span> <span class="pre">'correct_nonlinearity':</span> <span class="pre">False,</span> <span class="pre">'dark':</span> <span class="pre">'dark_spectrum.npz',</span> <span class="pre">'exposure':</span> <span class="pre">0.1,</span> <span class="pre">'exposure_delay':</span> <span class="pre">0,</span> <span class="pre">'file_name':</span> <span class="pre">'test.h5',</span> <span class="pre">'file_path':</span> <span class="pre">'.',</span> <span class="pre">'reference':</span> <span class="pre">'reference_spectrum.npz',</span> <span class="pre">'save_single_scan':</span> <span class="pre">False,</span> <span class="pre">'transmission_denominator_epsilon':</span> <span class="pre">0.001,</span> <span class="pre">'use_dark_spectrum':</span> <span class="pre">False}</span></em><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.defaults" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cseabreeze'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_serial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.__init__" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'cseabreeze'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_serial</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.__init__" title="Link to this definition">#</a></dt>
+<dd><p>Initialize the spectrometer driver.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>backend</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>default=&quot;cseabreeze&quot;</em>) – SeaBreeze backend to use.</p></li>
+<li><p><strong>device_serial</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Serial number of the spectrometer to connect to. The first
+available spectrometer is used when omitted. Startup fails if
+no matching, available device can be opened and initialized.</p></li>
+<li><p><strong>overrides</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>, </em><em>optional</em>) – Configuration values that override the driver defaults.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.15)"><strong>RuntimeError</strong></a> – If SeaBreeze cannot discover or initialize an available spectrometer.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.status">
+<span class="sig-name descname"><span class="pre">status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.status" title="Link to this definition">#</a></dt>
+<dd><p>Report the identity of the connected UV-Vis spectrometer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_exposure">
+<span class="sig-name descname"><span class="pre">get_exposure</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.get_exposure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_exposure" title="Link to this definition">#</a></dt>
+<dd><p>Return the integration time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Integration time in seconds.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_exposure_delay">
+<span class="sig-name descname"><span class="pre">get_exposure_delay</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.get_exposure_delay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_exposure_delay" title="Link to this definition">#</a></dt>
+<dd><p>Return the delay between acquired frames.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Delay in seconds.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_file_name">
+<span class="sig-name descname"><span class="pre">get_file_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.get_file_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_file_name" title="Link to this definition">#</a></dt>
+<dd><p>Return the individual-scan file name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Configured file name.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_save_single_scan">
+<span class="sig-name descname"><span class="pre">get_save_single_scan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.get_save_single_scan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_save_single_scan" title="Link to this definition">#</a></dt>
+<dd><p>Return whether individual scans are written to disk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when acquired scans are saved.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_file_path">
+<span class="sig-name descname"><span class="pre">get_file_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.get_file_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_file_path" title="Link to this definition">#</a></dt>
+<dd><p>Return the individual-scan output directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Configured output directory.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_file_path">
+<span class="sig-name descname"><span class="pre">set_file_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.set_file_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_file_path" title="Link to this definition">#</a></dt>
+<dd><p>Set the individual-scan output directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Directory for acquired scan files.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_file_name">
+<span class="sig-name descname"><span class="pre">set_file_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.set_file_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_file_name" title="Link to this definition">#</a></dt>
+<dd><p>Set the individual-scan file name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Name for acquired scan files.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_save_single_scan">
+<span class="sig-name descname"><span class="pre">set_save_single_scan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_single_scan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.set_save_single_scan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_save_single_scan" title="Link to this definition">#</a></dt>
+<dd><p>Enable or disable writing individual scans to disk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>save_single_scan</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether to write acquired scans to disk.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_exposure_delay">
+<span class="sig-name descname"><span class="pre">set_exposure_delay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.set_exposure_delay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_exposure_delay" title="Link to this definition">#</a></dt>
+<dd><p>Set the delay between acquired frames.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>delay</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Delay in seconds.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_exposure">
+<span class="sig-name descname"><span class="pre">set_exposure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.set_exposure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_exposure" title="Link to this definition">#</a></dt>
+<dd><p>Set the spectrometer integration time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>exposure</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Integration time in seconds.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.post_tiled_finalize">
+<span class="sig-name descname"><span class="pre">post_tiled_finalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tiled_entry_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.post_tiled_finalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.post_tiled_finalize" title="Link to this definition">#</a></dt>
+<dd><p>Persist a successfully uploaded Tiled reference entry ID.</p>
+<p><code class="docutils literal notranslate"><span class="pre">save_reference</span></code> always promotes its target slot to the uploaded
+Tiled entry, including when it was initially configured as a local
+<code class="docutils literal notranslate"><span class="pre">.npz</span></code> file.  <code class="docutils literal notranslate"><span class="pre">measure</span></code> retains its existing source-selection
+behavior for its optional reference-setting flags.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.measure">
+<span class="sig-name descname"><span class="pre">measure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_frames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduced</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">absorbance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_reference</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_air</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_dark</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavelengths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[300.0,</span> <span class="pre">900.0]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.measure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.measure" title="Link to this definition">#</a></dt>
+<dd><p>Acquire spectra and optionally reduce them against a reference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_frames</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Number of spectra to acquire.</p></li>
+<li><p><strong>reduced</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – Whether to include transmission and extinction variables in
+addition to the measured intensity spectrum.</p></li>
+<li><p><strong>absorbance</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=True</em>) – Whether to include extinction (absorbance) variables when
+<code class="docutils literal notranslate"><span class="pre">reduced</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>. Transmission variables are always
+included for a reduced measurement.</p></li>
+<li><p><strong>set_reference</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – Save this measurement as the reference source.</p></li>
+<li><p><strong>set_air</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – Save this measurement as the air reference source.</p></li>
+<li><p><strong>set_dark</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – Save this measurement as the dark reference source.</p></li>
+<li><p><strong>exposure</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Temporary integration time in seconds.</p></li>
+<li><p><strong>wavelengths</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>]</em><em>, </em><em>optional</em>) – Inclusive <code class="docutils literal notranslate"><span class="pre">[minimum,</span> <span class="pre">maximum]</span></code> wavelength range in nm. When
+supplied, only this range is reduced and included in the returned
+dataset. References are always acquired and stored full-spectrum.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Raw spectra, summary statistics, and optionally reduced spectra.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xarray.Dataset</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If a requested reference is unavailable or incompatible.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.save_reference">
+<span class="sig-name descname"><span class="pre">save_reference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_frames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'reference'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.save_reference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.save_reference" title="Link to this definition">#</a></dt>
+<dd><p>Acquire and save a reference for later spectrum reduction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_frames</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>default=1</em>) – Number of spectra to average into the reference.</p></li>
+<li><p><strong>reference_name</strong> (<em>{&quot;reference&quot;</em><em>, </em><em>&quot;air&quot;</em><em>, </em><em>&quot;dark&quot;}</em><em>, </em><em>default=&quot;reference&quot;</em>) – Reference slot to update. Its configured locator selects the local
+<code class="docutils literal notranslate"><span class="pre">.npz</span></code> or Tiled save destination.</p></li>
+<li><p><strong>exposure</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Temporary integration time in seconds.</p></li>
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Local directory in which to save the reference. The current
+reference filename is retained (for example,
+<code class="docutils literal notranslate"><span class="pre">reference_spectrum.npz</span></code>). An explicit <code class="docutils literal notranslate"><span class="pre">.npz</span></code> path is also
+accepted. When omitted, the configured path is used; defaults are
+under <code class="docutils literal notranslate"><span class="pre">AFL_HOME/uvvis</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Saved reference spectrum and its standard deviation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xarray.Dataset</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_reference_path">
+<span class="sig-name descname"><span class="pre">get_reference_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'reference'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.get_reference_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_reference_path" title="Link to this definition">#</a></dt>
+<dd><p>Return the AFL-home path for a local reduction reference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>reference_name</strong> (<em>{&quot;reference&quot;</em><em>, </em><em>&quot;air&quot;</em><em>, </em><em>&quot;dark&quot;}</em><em>, </em><em>default=&quot;reference&quot;</em>) – Local reference slot to inspect.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Reference file path beneath <code class="docutils literal notranslate"><span class="pre">AFL_HOME/uvvis</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the slot is configured as a Tiled entry.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.reduce">
+<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_raw_mean</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_raw_std</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">absorbance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'reference'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transmission</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavelength_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_dark_spectrum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a></span></span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.reduce" title="Link to this definition">#</a></dt>
+<dd><p>Reduce a raw spectrum against the active reference source.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_raw_mean</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Mean raw sample intensity.</p></li>
+<li><p><strong>data_raw_std</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Standard deviation of the raw sample intensity.</p></li>
+<li><p><strong>absorbance</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=True</em>) – Include extinction (absorbance) and propagated-uncertainty arrays.</p></li>
+<li><p><strong>reference_name</strong> (<em>{&quot;reference&quot;</em><em>, </em><em>&quot;air&quot;}</em><em>, </em><em>default=&quot;reference&quot;</em>) – Reference slot to use. Its configured locator selects the local or
+Tiled source.</p></li>
+<li><p><strong>transmission</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=True</em>) – Include transmission and propagated-uncertainty arrays.</p></li>
+<li><p><strong>use_dark_spectrum</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Override the configured dark-spectrum subtraction setting for this
+reduction. The configured default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Mapping containing the requested arrays: <code class="docutils literal notranslate"><span class="pre">transmission</span></code> and
+<code class="docutils literal notranslate"><span class="pre">transmission_std</span></code> and/or <code class="docutils literal notranslate"><span class="pre">extinction</span></code> and <code class="docutils literal notranslate"><span class="pre">extinction_std</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a> of <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If neither transmission nor absorbance is requested.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>By default, the transmission is calculated as $T = S / R$, where $S$
+and $R$ are the mean sample and reference intensities. When
+dark-spectrum subtraction is enabled, the stored dark spectrum $D$ is
+subtracted from both:</p>
+<p>$$
+T = frac{S - D}{R - D}
+$$</p>
+<p>With dark-spectrum subtraction enabled, the propagated uncertainty is:</p>
+<p>$$
+sigma_T = sqrt{</p>
+<blockquote>
+<div><p>left(frac{sigma_S}{R - D}right)^2
++ left(frac{(S - D)sigma_R}{(R - D)^2}right)^2
++ left(frac{(S - R)sigma_D}{(R - D)^2}right)^2</p>
+</div></blockquote>
+<section id="id1">
+<h2>}<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<p>When the denominator is close to zero, it is replaced by a signed
+epsilon before calculating transmission and its uncertainty. The
+returned <code class="docutils literal notranslate"><span class="pre">extinction</span></code> fields are absorbance values and use:</p>
+<p>$$
+A = -log_{10}(T), qquad
+sigma_A = frac{sigma_T}{<a href="#id2"><span class="problematic" id="id3">|T|</span></a>ln(10)}
+$$</p>
+</section>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.getExposure">
 <span class="sig-name descname"><span class="pre">getExposure</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.getExposure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.getExposure" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Return the integration time through the deprecated API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Integration time in seconds.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)">float</a></p>
+</dd>
+<dt class="field-odd">Warns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>DeprecationWarning</strong> – Use <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_exposure" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_exposure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_exposure()</span></code></a> instead.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.getExposureDelay">
 <span class="sig-name descname"><span class="pre">getExposureDelay</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.getExposureDelay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.getExposureDelay" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Return the frame delay through the deprecated API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Delay in seconds.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)">float</a></p>
+</dd>
+<dt class="field-odd">Warns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>DeprecationWarning</strong> – Use <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_exposure_delay" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_exposure_delay"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_exposure_delay()</span></code></a> instead.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.getFilename">
 <span class="sig-name descname"><span class="pre">getFilename</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.getFilename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.getFilename" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Return the scan file name through the deprecated API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Configured file name.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
+</dd>
+<dt class="field-odd">Warns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>DeprecationWarning</strong> – Use <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_file_name" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_file_name"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_file_name()</span></code></a> instead.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.getSaveSingleScan">
 <span class="sig-name descname"><span class="pre">getSaveSingleScan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.getSaveSingleScan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.getSaveSingleScan" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Return the scan-save setting through the deprecated API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Scan-save setting.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)">bool</a></p>
+</dd>
+<dt class="field-odd">Warns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>DeprecationWarning</strong> – Use <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_save_single_scan" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_save_single_scan"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_save_single_scan()</span></code></a> instead.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.getFilepath">
 <span class="sig-name descname"><span class="pre">getFilepath</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.getFilepath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.getFilepath" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Return the scan directory through the deprecated API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Configured output directory.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
+</dd>
+<dt class="field-odd">Warns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>DeprecationWarning</strong> – Use <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_file_path" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_file_path"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_file_path()</span></code></a> instead.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setFilepath">
-<span class="sig-name descname"><span class="pre">setFilepath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.setFilepath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setFilepath" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">setFilepath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.setFilepath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setFilepath" title="Link to this definition">#</a></dt>
+<dd><p>Set the scan directory through the deprecated API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – New output directory.</p>
+</dd>
+<dt class="field-even">Warns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>DeprecationWarning</strong> – Use <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_file_path" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_file_path"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_file_path()</span></code></a> instead.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setFilename">
-<span class="sig-name descname"><span class="pre">setFilename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.setFilename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setFilename" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">setFilename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.setFilename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setFilename" title="Link to this definition">#</a></dt>
+<dd><p>Set the scan file name through the deprecated API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – New output file name.</p>
+</dd>
+<dt class="field-even">Warns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>DeprecationWarning</strong> – Use <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_file_name" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_file_name"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_file_name()</span></code></a> instead.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setSaveSingleScan">
-<span class="sig-name descname"><span class="pre">setSaveSingleScan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">saveSingleScan</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.setSaveSingleScan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setSaveSingleScan" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">setSaveSingleScan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_single_scan</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.setSaveSingleScan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setSaveSingleScan" title="Link to this definition">#</a></dt>
+<dd><p>Set scan persistence through the deprecated API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>save_single_scan</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether to save acquired scans.</p>
+</dd>
+<dt class="field-even">Warns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>DeprecationWarning</strong> – Use <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_save_single_scan" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_save_single_scan"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_save_single_scan()</span></code></a> instead.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setExposureDelay">
-<span class="sig-name descname"><span class="pre">setExposureDelay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.setExposureDelay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setExposureDelay" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">setExposureDelay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delay</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.setExposureDelay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setExposureDelay" title="Link to this definition">#</a></dt>
+<dd><p>Set frame delay through the deprecated API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>delay</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Delay in seconds.</p>
+</dd>
+<dt class="field-even">Warns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>DeprecationWarning</strong> – Use <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_exposure_delay" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_exposure_delay"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_exposure_delay()</span></code></a> instead.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setExposure">
-<span class="sig-name descname"><span class="pre">setExposure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.setExposure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setExposure" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">setExposure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposure</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.setExposure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setExposure" title="Link to this definition">#</a></dt>
+<dd><p>Set integration time through the deprecated API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>exposure</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Integration time in seconds.</p>
+</dd>
+<dt class="field-even">Warns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>DeprecationWarning</strong> – Use <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_exposure" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_exposure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_exposure()</span></code></a> instead.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.collectContinuous">
-<span class="sig-name descname"><span class="pre">collectContinuous</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.collectContinuous"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.collectContinuous" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.collect">
+<span class="sig-name descname"><span class="pre">collect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.collect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.collect" title="Link to this definition">#</a></dt>
+<dd><p>Acquire spectra through the deprecated API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> – Positional arguments forwarded to <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.measure" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.measure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">measure()</span></code></a>.</p></li>
+<li><p><strong>**kwargs</strong> – Keyword arguments forwarded to <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.measure" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.measure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">measure()</span></code></a>. The legacy
+<code class="docutils literal notranslate"><span class="pre">nframes</span></code> name is translated to <code class="docutils literal notranslate"><span class="pre">n_frames</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Measurement result.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xarray.Dataset</p>
+</dd>
+<dt class="field-even">Warns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>DeprecationWarning</strong> – Use <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.measure" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.measure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">measure()</span></code></a> instead.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.collectSingleSpectrum">
 <span class="sig-name descname"><span class="pre">collectSingleSpectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">set_reference</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_air</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.collectSingleSpectrum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.collectSingleSpectrum" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Acquire one spectrum through the deprecated API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>set_reference</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – Save the spectrum as the local reference.</p></li>
+<li><p><strong>set_air</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – Save the spectrum as the local air reference.</p></li>
+<li><p><strong>**kwargs</strong> – Ignored legacy keyword arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Single raw spectrum.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xarray.Dataset</p>
+</dd>
+<dt class="field-even">Warns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>DeprecationWarning</strong> – Use <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.measure" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.measure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">measure()</span></code></a> with <code class="docutils literal notranslate"><span class="pre">n_frames=1</span></code> instead.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.collect">
-<span class="sig-name descname"><span class="pre">collect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nframes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduced</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">absorbance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_reference</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_air</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.collect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.collect" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.collectContinuous">
+<span class="sig-name descname"><span class="pre">collectContinuous</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.collectContinuous"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.collectContinuous" title="Link to this definition">#</a></dt>
+<dd><p>Acquire continuously through the deprecated API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>duration</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Acquisition duration in seconds.</p></li>
+<li><p><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.15)"><em>datetime.datetime</em></a><em>, </em><em>optional</em>) – Time at which acquisition begins. Starts immediately when omitted.</p></li>
+<li><p><strong>return_data</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – Retained for compatibility and ignored.</p></li>
+<li><p><strong>**kwargs</strong> – Ignored legacy keyword arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>First acquired spectrum and wavelength grid.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xarray.Dataset</p>
+</dd>
+<dt class="field-even">Warns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>DeprecationWarning</strong> – Use <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.measure" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.measure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">measure()</span></code></a> instead.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.reduced">
-<span class="sig-name descname"><span class="pre">reduced</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_raw_mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_raw_std</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">absorbance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_uuid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'reference_uuid'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.reduced"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.reduced" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">reduced</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/instrument/SeabreezeUVVis.html#SeabreezeUVVis.reduced"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.reduced" title="Link to this definition">#</a></dt>
+<dd><p>Reduce a spectrum through the deprecated API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> – Positional arguments forwarded to <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.reduce" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.reduce"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reduce()</span></code></a>.</p></li>
+<li><p><strong>**kwargs</strong> – Keyword arguments forwarded to <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.reduce" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.reduce"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reduce()</span></code></a>. The legacy
+<code class="docutils literal notranslate"><span class="pre">reference_uuid</span></code> key is translated to a local reference name.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Reduced spectrum and propagated uncertainty.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a> of <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)">numpy.ndarray</a></p>
+</dd>
+<dt class="field-even">Warns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>DeprecationWarning</strong> – Use <a class="reference internal" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.reduce" title="AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.reduce"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reduce()</span></code></a> instead.</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -613,7 +1149,7 @@
             
             
               
-                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
                 <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
@@ -623,11 +1159,27 @@
     class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> On this page
   </div>
-  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.defaults"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.defaults</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.__init__"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.__init__()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.status"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.status()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_exposure"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.get_exposure()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_exposure_delay"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.get_exposure_delay()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_file_name"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.get_file_name()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_save_single_scan"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.get_save_single_scan()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_file_path"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.get_file_path()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_file_path"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.set_file_path()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_file_name"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.set_file_name()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_save_single_scan"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.set_save_single_scan()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_exposure_delay"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.set_exposure_delay()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.set_exposure"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.set_exposure()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.post_tiled_finalize"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.post_tiled_finalize()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.measure"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.measure()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.save_reference"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.save_reference()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.get_reference_path"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.get_reference_path()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.reduce"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.reduce()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.getExposure"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.getExposure()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.getExposureDelay"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.getExposureDelay()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.getFilename"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.getFilename()</span></code></a></li>
@@ -638,9 +1190,9 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setSaveSingleScan"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.setSaveSingleScan()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setExposureDelay"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.setExposureDelay()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.setExposure"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.setExposure()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.collectContinuous"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.collectContinuous()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.collectSingleSpectrum"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.collectSingleSpectrum()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.collect"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.collect()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.collectSingleSpectrum"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.collectSingleSpectrum()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.collectContinuous"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.collectContinuous()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.instrument.SeabreezeUVVis.SeabreezeUVVis.reduced"><code class="docutils literal notranslate"><span class="pre">SeabreezeUVVis.reduced()</span></code></a></li>
 </ul>
 </li>
@@ -648,13 +1200,13 @@
   </nav></div>
 
   <div class="sidebar-secondary-item">
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/_autosummary/AFL.automation.instrument.SeabreezeUVVis.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div></div>
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/_autosummary/AFL.automation.instrument.SeabreezeUVVis.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
 
 </div></div>
               
@@ -669,8 +1221,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
 
 
   
@@ -693,7 +1245,6 @@
 
   <p class="sphinx-version">
     Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
-    <br/>
   </p>
 </div>
       
@@ -706,7 +1257,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
 </p></div>
       
     </div>

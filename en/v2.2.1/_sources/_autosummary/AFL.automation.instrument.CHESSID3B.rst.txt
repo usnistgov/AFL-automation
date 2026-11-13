@@ -1,0 +1,15 @@
+AFL.automation.instrument.CHESSID3B
+===================================
+
+.. automodule:: AFL.automation.instrument.CHESSID3B
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CHESSID3B
+      Driver
+      PySpecClient
+      ScatteringInstrument
+   

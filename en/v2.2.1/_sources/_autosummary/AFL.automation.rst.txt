@@ -1,0 +1,33 @@
+﻿AFL.automation
+==============
+
+.. automodule:: AFL.automation
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      test
+      version
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      PackageNotFoundError
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   APIServer
+   apps
+   instrument
+   loading
+   mixcalc
+   sample_env
+   shared
+   vision

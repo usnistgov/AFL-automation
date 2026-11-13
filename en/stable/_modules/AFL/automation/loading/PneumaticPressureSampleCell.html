@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 
@@ -26,18 +25,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ntd2d.css?v=525a25f0" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
     <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
@@ -46,32 +45,40 @@
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../../../_static/_static/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/AFL/automation/loading/PneumaticPressureSampleCell';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../../_static/logo_light.svg"/>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
   
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
 
   <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
   <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
   
 
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -97,9 +104,9 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -191,7 +198,7 @@
         <div class="navbar-item navbar-persistent--container">
           
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -201,11 +208,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -218,8 +232,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -230,7 +243,7 @@
   
     <div class="navbar-persistent--mobile">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -251,7 +264,7 @@
       
         
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
         
 
@@ -320,11 +333,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -337,8 +357,7 @@
           
           
           
-          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -378,7 +397,7 @@
     
     <li class="breadcrumb-item breadcrumb-home">
       <a href="../../../../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
+        <i class="fa-solid fa-house"></i>
       </a>
     </li>
     
@@ -405,21 +424,19 @@
                 <article class="bd-article">
                   
   <h1>Source code for AFL.automation.loading.PneumaticPressureSampleCell</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">requests</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
-<span class="kn">from</span> <span class="nn">AFL.automation.loading.SampleCell</span> <span class="kn">import</span> <span class="n">SampleCell</span>
-<span class="kn">from</span> <span class="nn">AFL.automation.APIServer.Driver</span> <span class="kn">import</span> <span class="n">Driver</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.loading.SampleCell</span><span class="w"> </span><span class="kn">import</span> <span class="n">SampleCell</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.APIServer.Driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">Driver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-
-<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <div class="viewcode-block" id="PneumaticPressureSampleCell">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell">[docs]</a>
-<span class="k">class</span> <span class="nc">PneumaticPressureSampleCell</span><span class="p">(</span><span class="n">Driver</span><span class="p">,</span><span class="n">SampleCell</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PneumaticPressureSampleCell</span><span class="p">(</span><span class="n">Driver</span><span class="p">,</span><span class="n">SampleCell</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Class for a sample cell consisting of a push-through, pneumatically-closed sample loader.</span>
 
@@ -434,6 +451,7 @@
     <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;load_timeout&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">60</span>
     
     <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;arm_move_delay&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.2</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;arm_move_timeout&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
     <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;vent_delay&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span>
     <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;rinse_program&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
                                 <span class="p">(</span><span class="s1">&#39;rinse1&#39;</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
@@ -443,13 +461,14 @@
                                 <span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),</span>
                                 <span class="p">(</span><span class="s1">&#39;blow&#39;</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
                                 <span class="p">]</span> 
-    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;external_load_complete_trigger&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;external_load_complete_trigger&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Currently unused.</span>
     <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;ramp_load_stop_pressure&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">7</span>
     <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;ramp_load_duration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;enforce_door_closed&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
 <div class="viewcode-block" id="PneumaticPressureSampleCell.__init__">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.__init__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pctrl</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pctrl</span><span class="p">,</span>
                       <span class="n">relayboard</span><span class="p">,</span>
                       <span class="n">digitalin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                       <span class="n">rinse1_tank_level</span><span class="o">=</span><span class="mi">950</span><span class="p">,</span>
@@ -489,6 +508,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">robot_interlock_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;http://</span><span class="si">{</span><span class="n">robot_interlock_host</span><span class="si">}</span><span class="s1">:31950/robot/door/status&#39;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">robot_interlock_url</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_robot_door_state</span> <span class="o">=</span> <span class="kc">None</span>
 
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_USE_ARM_LIMITS</span> <span class="o">=</span> <span class="kc">False</span>
@@ -507,6 +527,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">relayboard</span><span class="o">.</span><span class="n">setChannels</span><span class="p">({</span><span class="s1">&#39;piston-vent&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">})</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_arm_up</span><span class="p">()</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s2">&quot;Successfully initialized PneumaticPressureSampleCell.&quot;</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;READY&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rinse_status</span> <span class="o">=</span> <span class="s1">&#39;Not Rinsing&#39;</span>
         
@@ -531,18 +553,18 @@
         <span class="s1">&#39;rinse2&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Rinse2 (mL)&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;float&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="mi">950</span><span class="p">},</span>
         <span class="s1">&#39;waste&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Waste (mL)&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;float&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">}</span>
         <span class="p">}})</span>
-    <span class="k">def</span> <span class="nf">reset_tank_levels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">rinse1</span><span class="o">=</span><span class="mi">950</span><span class="p">,</span><span class="n">rinse2</span><span class="o">=</span><span class="mi">950</span><span class="p">,</span><span class="n">waste</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_tank_levels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">rinse1</span><span class="o">=</span><span class="mi">950</span><span class="p">,</span><span class="n">rinse2</span><span class="o">=</span><span class="mi">950</span><span class="p">,</span><span class="n">waste</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rinse1_tank_level</span> <span class="o">=</span> <span class="n">rinse1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">waste_tank_level</span> <span class="o">=</span> <span class="n">waste</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rinse2_tank_level</span> <span class="o">=</span> <span class="n">rinse2</span></div>
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">app</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">app</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app</span>
 
     <span class="nd">@app</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">app</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">app</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">app</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_app</span> <span class="o">=</span> <span class="n">app</span>
         <span class="k">else</span><span class="p">:</span>
@@ -553,11 +575,11 @@
                 <span class="n">ls</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">app</span>
             
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
 
     <span class="nd">@data</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span>
         <span class="k">else</span><span class="p">:</span>
@@ -569,7 +591,7 @@
             
 <div class="viewcode-block" id="PneumaticPressureSampleCell.status">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.status">[docs]</a>
-    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">status</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;State: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">status</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Arm State: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">arm_state</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -591,98 +613,325 @@
             
         <span class="k">return</span> <span class="n">status</span></div>
 
- 
-    <span class="k">def</span> <span class="nf">_arm_interlock_check</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_USE_DOOR_INTERLOCK</span><span class="p">:</span>
-            <span class="n">oldstate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span>
-            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_door_state</span><span class="p">():</span>
-                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;AWAITING DOOR CLOSED BEFORE MOVING ARM&#39;</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">oldstate</span>
 
-    <span class="k">def</span> <span class="nf">_door_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_arm_interlock_check</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_USE_DOOR_INTERLOCK</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;enforce_door_closed&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span><span class="s1">&#39;Door-closed interlock check is disabled; moving arm without verifying the door is closed.&#39;</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="n">oldstate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span>
+            <span class="n">wait_started</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">last_log_time</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">startup_message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s1">&#39; Driver initialization is paused; the API server will not start &#39;</span>
+                <span class="s1">&#39;until initialization completes.&#39;</span>
+                <span class="k">if</span> <span class="n">oldstate</span> <span class="o">==</span> <span class="s1">&#39;FRESH&#39;</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">digitalin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s1">&#39;DOOR&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">digitalin</span><span class="o">.</span><span class="n">state</span><span class="p">:</span>
+                <span class="n">door_source</span> <span class="o">=</span> <span class="s1">&#39;digital input DOOR&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">door_source</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;robot door status at </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">robot_interlock_url</span><span class="si">}</span><span class="s1">&#39;</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_door_state</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;AWAITING DOOR CLOSED BEFORE MOVING ARM&#39;</span>
+                    <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">wait_started</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">wait_started</span> <span class="o">=</span> <span class="n">now</span>
+                    <span class="k">if</span> <span class="n">last_log_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">now</span> <span class="o">-</span> <span class="n">last_log_time</span> <span class="o">&gt;=</span> <span class="mf">5.0</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s1">&#39;Arm motion blocked: door reports OPEN (</span><span class="si">{</span><span class="n">door_source</span><span class="si">}</span><span class="s1">). &#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39;Waiting for the door to close (</span><span class="si">{</span><span class="n">now</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">wait_started</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> s elapsed). &#39;</span>
+                            <span class="s1">&#39;Close the door to continue; this wait has no timeout.&#39;</span>
+                            <span class="o">+</span> <span class="n">startup_message</span>
+                        <span class="p">)</span>
+                        <span class="n">last_log_time</span> <span class="o">=</span> <span class="n">now</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span>
+                    <span class="s1">&#39;Door interlock wait interrupted; arm motion was not started.&#39;</span>
+                    <span class="o">+</span> <span class="p">(</span><span class="s1">&#39; Driver initialization did not complete; the API server &#39;</span>
+                       <span class="s1">&#39;was not started.&#39;</span> <span class="k">if</span> <span class="n">oldstate</span> <span class="o">==</span> <span class="s1">&#39;FRESH&#39;</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">raise</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">oldstate</span>
+            <span class="k">if</span> <span class="n">wait_started</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Before API logging is configured, warning messages remain</span>
+                <span class="c1"># visible through Python logging&#39;s fallback stderr handler.</span>
+                <span class="n">log</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span>
+                <span class="n">log</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;Door reports CLOSED (</span><span class="si">{</span><span class="n">door_source</span><span class="si">}</span><span class="s1">) after &#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">wait_started</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> s; resuming arm motion.&#39;</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_door_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">digitalin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="s1">&#39;DOOR&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">digitalin</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                 <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">digitalin</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;DOOR&#39;</span><span class="p">]</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">state</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot_interlock_url</span><span class="p">,</span><span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;Opentrons-Version&#39;</span><span class="p">:</span> <span class="s1">&#39;2&#39;</span><span class="p">})</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;status&#39;</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="s1">&#39;open&#39;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">elif</span> <span class="n">state</span> <span class="o">==</span> <span class="s1">&#39;closed&#39;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">False</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;could not get robot door status&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot_interlock_url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">robot_interlock_url</span><span class="p">,</span>
+            <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Opentrons-Version&#39;</span><span class="p">:</span> <span class="s1">&#39;2&#39;</span><span class="p">})</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;status&#39;</span><span class="p">]</span>
 
+            <span class="k">if</span> <span class="n">state</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_robot_door_state</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Robot door status at </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">robot_interlock_url</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_last_robot_door_state</span> <span class="o">=</span> <span class="n">state</span>
 
-    <span class="k">def</span> <span class="nf">_arm_up</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="s1">&#39;open&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">elif</span> <span class="n">state</span> <span class="o">==</span> <span class="s1">&#39;closed&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_arm_up</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Before APIServer configures its handlers, logging&#39;s fallback handler</span>
+        <span class="c1"># only displays WARNING and above. Keep startup progress visible there.</span>
+        <span class="n">log_progress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span>
+        <span class="n">startup_message</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39; Driver initialization is paused; the API server will not start &#39;</span>
+            <span class="s1">&#39;until initialization completes.&#39;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s1">&#39;FRESH&#39;</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_arm_interlock_check</span><span class="p">()</span>
+        <span class="n">log_progress</span><span class="p">(</span>
+            <span class="s1">&#39;Commanding arm UP: piston-vent=ON, arm-up=ON, arm-down=OFF. &#39;</span>
+            <span class="s1">&#39;Waiting for the relay command to complete.&#39;</span> <span class="o">+</span> <span class="n">startup_message</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">relayboard</span><span class="o">.</span><span class="n">setChannels</span><span class="p">({</span><span class="s1">&#39;piston-vent&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span><span class="s1">&#39;arm-up&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span><span class="s1">&#39;arm-down&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">})</span>
+        <span class="n">log_progress</span><span class="p">(</span><span class="s1">&#39;Arm UP relay command completed; checking the arm position.&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_USE_ARM_LIMITS</span><span class="p">:</span>
-            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">digitalin</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;ARM_UP&#39;</span><span class="p">]:</span>
-                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+            <span class="n">pin</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">digitalin</span><span class="p">,</span> <span class="s1">&#39;ids&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ARM_UP&#39;</span><span class="p">)</span>
+            <span class="n">source</span> <span class="o">=</span> <span class="s1">&#39;ARM_UP&#39;</span> <span class="k">if</span> <span class="n">pin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="sa">f</span><span class="s1">&#39;ARM_UP (GPIO </span><span class="si">{</span><span class="n">pin</span><span class="si">}</span><span class="s1">)&#39;</span>
+            <span class="n">wait_started</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+            <span class="n">last_log_time</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">digitalin</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;ARM_UP&#39;</span><span class="p">]:</span>
+                    <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">last_log_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">now</span> <span class="o">-</span> <span class="n">last_log_time</span> <span class="o">&gt;=</span> <span class="mf">5.0</span><span class="p">:</span>
+                        <span class="n">input_states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">digitalin</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                        <span class="n">inputs</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">input_states</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span><span class="si">}</span><span class="s1"> &#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39;(</span><span class="si">{</span><span class="s2">&quot;HIGH&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">input_states</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">&quot;LOW&quot;</span><span class="si">}</span><span class="s1">)&#39;</span>
+                            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ARM_UP&#39;</span><span class="p">,</span> <span class="s1">&#39;ARM_DOWN&#39;</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">input_states</span>
+                        <span class="p">)</span>
+                        <span class="n">log_progress</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s1">&#39;Waiting for arm UP limit switch </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s1"> to become LOW (0). &#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39;Inputs: </span><span class="si">{</span><span class="n">inputs</span><span class="si">}</span><span class="s1">. Elapsed: </span><span class="si">{</span><span class="n">now</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">wait_started</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> s. &#39;</span>
+                            <span class="s1">&#39;This wait has no timeout.&#39;</span> <span class="o">+</span> <span class="n">startup_message</span>
+                        <span class="p">)</span>
+                        <span class="n">last_log_time</span> <span class="o">=</span> <span class="n">now</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;Arm UP limit-switch wait interrupted after &#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">wait_started</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> s while waiting &#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;for </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s1"> to become LOW (0).&#39;</span> <span class="o">+</span> <span class="n">startup_message</span>
+                <span class="p">)</span>
+                <span class="k">raise</span>
+            <span class="n">log_progress</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;Arm UP limit switch </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s1"> is LOW (0); arm position confirmed &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;after </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">wait_started</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> s.&#39;</span>
+            <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="n">log_progress</span><span class="p">(</span>
+                <span class="s1">&#39;No arm-position limit inputs configured; waiting &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;arm_move_delay&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">g</span><span class="si">}</span><span class="s1"> s for arm_move_delay.&#39;</span>
+            <span class="p">)</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;arm_move_delay&#39;</span><span class="p">])</span>
+            <span class="n">log_progress</span><span class="p">(</span><span class="s1">&#39;Arm UP move delay complete.&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">arm_state</span> <span class="o">=</span> <span class="s1">&#39;UP&#39;</span>
 
-    <span class="k">def</span> <span class="nf">_arm_down</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_wait_for_arm_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit_name</span><span class="p">,</span> <span class="n">direction</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wait for an active-low arm limit switch, with a bounded timeout.&quot;&quot;&quot;</span>
+        <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;arm_move_timeout&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">timeout</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;arm_move_timeout must be greater than zero.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Waiting up to </span><span class="si">{</span><span class="n">timeout</span><span class="si">:</span><span class="s1">g</span><span class="si">}</span><span class="s1"> s for arm to reach </span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s1"> limit &#39;</span>
+            <span class="sa">f</span><span class="s1">&#39;(</span><span class="si">{</span><span class="n">limit_name</span><span class="si">}</span><span class="s1">); the limit input must become LOW (0).&#39;</span>
+        <span class="p">)</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+        <span class="n">last_log_time</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">digitalin</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="n">limit_name</span><span class="p">]:</span>
+            <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+            <span class="k">if</span> <span class="n">elapsed</span> <span class="o">&gt;=</span> <span class="n">timeout</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_error</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;Arm </span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s1"> motion timed out after </span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> s; &#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;digital inputs=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">digitalin</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="si">}</span><span class="s1">.&#39;</span>
+                <span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;Arm did not reach the </span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s1"> limit (</span><span class="si">{</span><span class="n">limit_name</span><span class="si">}</span><span class="s1">) &#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;within </span><span class="si">{</span><span class="n">timeout</span><span class="si">:</span><span class="s1">g</span><span class="si">}</span><span class="s1"> s; input remains high.&#39;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">last_log_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">elapsed</span> <span class="o">-</span> <span class="n">last_log_time</span> <span class="o">&gt;=</span> <span class="mf">5.0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;Waiting for arm </span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s1"> limit: elapsed=</span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> s, &#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;timeout=</span><span class="si">{</span><span class="n">timeout</span><span class="si">:</span><span class="s1">g</span><span class="si">}</span><span class="s1"> s, digital inputs=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">digitalin</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="si">}</span><span class="s1">.&#39;</span>
+                <span class="p">)</span>
+                <span class="n">last_log_time</span> <span class="o">=</span> <span class="n">elapsed</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">timeout</span> <span class="o">-</span> <span class="n">elapsed</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Arm </span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s1"> limit </span><span class="si">{</span><span class="n">limit_name</span><span class="si">}</span><span class="s1"> is LOW (0); position confirmed &#39;</span>
+            <span class="sa">f</span><span class="s1">&#39;after </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_time</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> s.&#39;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_arm_down</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s1">&#39;Preparing arm DOWN motion; checking the door interlock.&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_arm_interlock_check</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">relayboard</span><span class="o">.</span><span class="n">setChannels</span><span class="p">({</span><span class="s1">&#39;piston-vent&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span><span class="s1">&#39;arm-up&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span><span class="s1">&#39;arm-down&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_channels_logged</span><span class="p">(</span>
+            <span class="p">{</span><span class="s1">&#39;piston-vent&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span><span class="s1">&#39;arm-up&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span><span class="s1">&#39;arm-down&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">},</span> <span class="s1">&#39;Arm DOWN&#39;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Arm DOWN: waiting </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;arm_move_delay&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">g</span><span class="si">}</span><span class="s1"> s for arm_move_delay.&#39;</span><span class="p">)</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;arm_move_delay&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_USE_ARM_LIMITS</span><span class="p">:</span>
-            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">digitalin</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;ARM_DOWN&#39;</span><span class="p">]:</span>
-                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_arm_limit</span><span class="p">(</span><span class="s1">&#39;ARM_DOWN&#39;</span><span class="p">,</span> <span class="s1">&#39;down&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span>
+                <span class="s1">&#39;Arm DOWN: no position limit inputs configured; waiting another &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;arm_move_delay&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">g</span><span class="si">}</span><span class="s1"> s. Position is not sensor-confirmed.&#39;</span>
+            <span class="p">)</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;arm_move_delay&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">arm_state</span> <span class="o">=</span> <span class="s1">&#39;DOWN&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s1">&#39;Arm DOWN motion complete; arm_state=DOWN.&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log_flow_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Log relay readback and cached inputs without querying door HTTP or sensors.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s1">: state=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">, arm_state=</span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;arm_state&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;unknown&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">; &#39;</span>
+            <span class="s1">&#39;reading relay states.&#39;</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">channels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relayboard</span><span class="o">.</span><span class="n">getChannels</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="c1"># A diagnostic readback must not interrupt the hardware workflow.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s1">: relay readback unavailable: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s1">: relay readback=</span><span class="si">{</span><span class="n">channels</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">digitalin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">digitalin</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s1">: cached digital inputs unavailable: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s1">: cached digital inputs=</span><span class="si">{</span><span class="n">inputs</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_channels_logged</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">requested</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="s2">&quot;ON&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">&quot;OFF&quot;</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">channels</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s1">: commanding relays </span><span class="si">{</span><span class="n">requested</span><span class="si">}</span><span class="s1">; waiting for command completion.&#39;</span><span class="p">)</span>
+        <span class="n">started</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relayboard</span><span class="o">.</span><span class="n">setChannels</span><span class="p">(</span><span class="n">channels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s1">: relay command completed in </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">started</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1"> s.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_flow_state</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PneumaticPressureSampleCell.loadSample">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.loadSample">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;button_text&#39;</span><span class="p">:</span><span class="s1">&#39;Load Sample&#39;</span><span class="p">,</span>
         <span class="s1">&#39;params&#39;</span><span class="p">:{</span><span class="s1">&#39;sampleVolume&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Sample Volume (mL)&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;float&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="mf">0.3</span><span class="p">}}})</span>
-    <span class="k">def</span> <span class="nf">loadSample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">cellname</span><span class="o">=</span><span class="s1">&#39;cell&#39;</span><span class="p">,</span><span class="n">sampleVolume</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">load_dest_label</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">loadSample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">cellname</span><span class="o">=</span><span class="s1">&#39;cell&#39;</span><span class="p">,</span><span class="n">sampleVolume</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">load_dest_label</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Load a sample into the cell</span>
 <span class="sd">        </span>
 <span class="sd">        Params `cellname` and `sampleVolume` are kept for backward compat, but are deprecated and unused.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;loadSample requested: state=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">, destination=</span><span class="si">{</span><span class="n">load_dest_label</span><span class="si">!r}</span><span class="s1">.&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="s1">&#39;READY&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;loadSample rejected: expected READY, current state=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Tried to load sample but cell not READY.&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;PREPARING TO LOAD&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">relayboard</span><span class="o">.</span><span class="n">setChannels</span><span class="p">({</span><span class="s1">&#39;piston-vent&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span><span class="s1">&#39;postsample&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">})</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_arm_down</span><span class="p">()</span>
-        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;vent_delay&#39;</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">relayboard</span><span class="o">.</span><span class="n">setChannels</span><span class="p">({</span><span class="s1">&#39;piston-vent&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span><span class="s1">&#39;postsample&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">})</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;setting state...&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">loadStoppedExternally</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">if</span> <span class="n">load_dest_label</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;LOAD IN PROGRESS&#39;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;LOAD IN PROGRESS to </span><span class="si">{</span><span class="n">load_dest_label</span><span class="si">}</span><span class="s1">&#39;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;sending dispense command&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;load_mode&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;static&#39;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pctrl</span><span class="o">.</span><span class="n">timed_dispense</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;load_pressure&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;load_timeout&#39;</span><span class="p">],</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;load_mode&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ramp&#39;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pctrl</span><span class="o">.</span><span class="n">ramp_dispense</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;load_pressure&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;ramp_load_stop_pressure&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;load_timeout&#39;</span><span class="p">],</span><span class="n">const_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;load_timeout&#39;</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;ramp_load_duration&#39;</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;invalid load_mode in config.  cannot load.  valid values are &quot;static&quot; or &quot;ramp&quot;&#39;</span><span class="p">)</span>
-        <span class="k">while</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pctrl</span><span class="o">.</span><span class="n">dispenseRunning</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">loadStoppedExternally</span><span class="p">):</span>
-            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.02</span><span class="p">)</span>
-            
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">loadStoppedExternally</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">relayboard</span><span class="o">.</span><span class="n">setChannels</span><span class="p">({</span><span class="s1">&#39;postsample&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">})</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;LOADED&#39;</span>
-        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># crude hack to allow sensor to push data into packet</span></div>
+        <span class="n">started</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+        <span class="n">phase</span> <span class="o">=</span> <span class="s1">&#39;reading load configuration&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;loadSample configuration: mode=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;load_mode&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;load_pressure=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;load_pressure&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> (controller pressure units), &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;load_timeout=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;load_timeout&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> s, vent_delay=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;vent_delay&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> s. &#39;</span>
+                <span class="s1">&#39;Pressure drives loading; the blow relay is not activated. &#39;</span>
+                <span class="s1">&#39;cellname and sampleVolume are unused.&#39;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log_flow_state</span><span class="p">(</span><span class="s1">&#39;loadSample starting&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;PREPARING TO LOAD&#39;</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="s1">&#39;venting before arm motion&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_channels_logged</span><span class="p">({</span><span class="s1">&#39;piston-vent&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span><span class="s1">&#39;postsample&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">},</span> <span class="s1">&#39;loadSample preparation&#39;</span><span class="p">)</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="s1">&#39;lowering arm&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_arm_down</span><span class="p">()</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="s1">&#39;waiting for vent delay&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;loadSample: arm DOWN; venting for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;vent_delay&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">g</span><span class="si">}</span><span class="s1"> s.&#39;</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;vent_delay&#39;</span><span class="p">])</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="s1">&#39;closing vent and opening postsample&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_channels_logged</span><span class="p">({</span><span class="s1">&#39;piston-vent&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span><span class="s1">&#39;postsample&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">},</span> <span class="s1">&#39;loadSample flow path&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loadStoppedExternally</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">load_dest_label</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;LOAD IN PROGRESS&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;LOAD IN PROGRESS to </span><span class="si">{</span><span class="n">load_dest_label</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="s1">&#39;starting pressure dispense&#39;</span>
+            <span class="n">dispense_started</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;load_mode&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;static&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;loadSample: starting static dispense at pressure=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;load_pressure&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> &#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;for up to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;load_timeout&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> s; state=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">.&#39;</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pctrl</span><span class="o">.</span><span class="n">timed_dispense</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;load_pressure&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;load_timeout&#39;</span><span class="p">],</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;load_mode&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ramp&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;loadSample: starting ramp from pressure=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;load_pressure&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> &#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;ramp_load_stop_pressure&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> over </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;ramp_load_duration&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> s, &#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;then holding for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;load_timeout&quot;</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;ramp_load_duration&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> s; &#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;state=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">.&#39;</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pctrl</span><span class="o">.</span><span class="n">ramp_dispense</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;load_pressure&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;ramp_load_stop_pressure&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;load_timeout&#39;</span><span class="p">],</span><span class="n">const_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;load_timeout&#39;</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;ramp_load_duration&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;invalid load_mode in config.  cannot load.  valid values are &quot;static&quot; or &quot;ramp&quot;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s1">&#39;loadSample: pressure dispense call returned; waiting for controller completion or external stop.&#39;</span><span class="p">)</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="s1">&#39;waiting for pressure dispense&#39;</span>
+            <span class="n">last_log_time</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">while</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pctrl</span><span class="o">.</span><span class="n">dispenseRunning</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">loadStoppedExternally</span><span class="p">):</span>
+                <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="n">dispense_started</span>
+                <span class="k">if</span> <span class="n">last_log_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">elapsed</span> <span class="o">-</span> <span class="n">last_log_time</span> <span class="o">&gt;=</span> <span class="mf">5.0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;loadSample progress: elapsed=</span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> s, &#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39;configured duration=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;load_timeout&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> s, &#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39;state=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">, arm_state=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">arm_state</span><span class="si">}</span><span class="s1">, external_stop=False. &#39;</span>
+                        <span class="s1">&#39;Controller is running; liquid movement is not measured here.&#39;</span>
+                    <span class="p">)</span>
+                    <span class="n">last_log_time</span> <span class="o">=</span> <span class="n">elapsed</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.02</span><span class="p">)</span>
+            <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="n">dispense_started</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">loadStoppedExternally</span><span class="p">:</span>
+                <span class="n">reason</span> <span class="o">=</span> <span class="s1">&#39;external stop received (sensor or stopLoad request)&#39;</span>
+            <span class="k">elif</span> <span class="n">elapsed</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;load_timeout&#39;</span><span class="p">]:</span>
+                <span class="n">reason</span> <span class="o">=</span> <span class="s1">&#39;configured dispense duration elapsed&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">reason</span> <span class="o">=</span> <span class="s1">&#39;pressure controller is no longer running&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;loadSample: dispense ended after </span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> s; reason=</span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loadStoppedExternally</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="s1">&#39;closing postsample after dispense&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_channels_logged</span><span class="p">({</span><span class="s1">&#39;postsample&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">},</span> <span class="s1">&#39;loadSample finish&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;LOADED&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span>
+                <span class="s1">&#39;loadSample: state=LOADED; this records dispense completion and does not verify liquid arrival. &#39;</span>
+                <span class="s1">&#39;Waiting 1 s for sensor metadata.&#39;</span>
+            <span class="p">)</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="s1">&#39;waiting for sensor metadata&#39;</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># crude hack to allow sensor to push data into packet</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log_flow_state</span><span class="p">(</span><span class="s1">&#39;loadSample completed&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;loadSample completed in </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">started</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> s.&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="ne">KeyboardInterrupt</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_error</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;loadSample failed during </span><span class="si">{</span><span class="n">phase</span><span class="si">}</span><span class="s1"> after </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">started</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> s; &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;state=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">, arm_state=</span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;arm_state&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;unknown&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">: &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span></div>
+
 
 <div class="viewcode-block" id="PneumaticPressureSampleCell.advanceSample">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.advanceSample">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;button_text&#39;</span><span class="p">:</span><span class="s1">&#39;Advance Sample&#39;</span><span class="p">,</span>
         <span class="s1">&#39;params&#39;</span><span class="p">:{</span><span class="s1">&#39;sampleVolume&#39;</span><span class="p">:{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span><span class="s1">&#39;Sample Volume (mL)&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">:</span><span class="s1">&#39;float&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">:</span><span class="mf">0.3</span><span class="p">}}})</span>
-    <span class="k">def</span> <span class="nf">advanceSample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">load_dest_label</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">advanceSample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">load_dest_label</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Move a sample from one measurement cell to the next</span>
 <span class="sd">        </span>
@@ -703,12 +952,12 @@
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Tried to advance sample but no sample is loaded.&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;PREPARING TO Advance&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">relayboard</span><span class="o">.</span><span class="n">setChannels</span><span class="p">({</span><span class="s1">&#39;postsample&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">})</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;setting state...&#39;</span><span class="p">)</span>        
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s1">&#39;setting state...&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">load_dest_label</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;LOAD IN PROGRESS&#39;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;LOAD IN PROGRESS to </span><span class="si">{</span><span class="n">load_dest_label</span><span class="si">}</span><span class="s1">&#39;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;sending dispense command&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s1">&#39;sending dispense command&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pctrl</span><span class="o">.</span><span class="n">timed_dispense</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;load_pressure&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;load_timeout&#39;</span><span class="p">],</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loadStoppedExternally</span> <span class="o">=</span> <span class="kc">False</span> 
         <span class="k">while</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pctrl</span><span class="o">.</span><span class="n">dispenseRunning</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">loadStoppedExternally</span><span class="p">):</span>
@@ -724,83 +973,125 @@
 <div class="viewcode-block" id="PneumaticPressureSampleCell.stopLoad">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.stopLoad">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">(</span><span class="n">render_hint</span><span class="o">=</span><span class="s1">&#39;raw&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">stopLoad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stopLoad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;stopLoad requested: state=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;secret&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;xrays&gt;neutrons&#39;</span><span class="p">:</span>
                 <span class="k">if</span> <span class="s1">&#39;LOAD IN PROGRESS&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;stopLoad ignored: no load is in progress; state=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
                     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Tried to stop load but load is not in progress. Doing nothing.&#39;</span><span class="p">,</span><span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
                     <span class="k">return</span> <span class="s1">&#39;There is no load running.&#39;</span>
                 <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s1">&#39;stopLoad: stopping pressure controller; requesting pressure=0.&#39;</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">pctrl</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">relayboard</span><span class="o">.</span><span class="n">setChannels</span><span class="p">({</span><span class="s1">&#39;postsample&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">})</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s1">&#39;stopLoad: pressure controller stop command completed.&#39;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_set_channels_logged</span><span class="p">({</span><span class="s1">&#39;postsample&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">},</span> <span class="s1">&#39;stopLoad&#39;</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">loadStoppedExternally</span><span class="o">=</span><span class="kc">True</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s1">&#39;stopLoad: postsample OFF; external stop flag set for the loading workflow.&#39;</span><span class="p">)</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">log_debug</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
                         <span class="k">try</span><span class="p">:</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;load_stop_source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;external&#39;</span>
                         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
                             <span class="k">pass</span>
                     <span class="k">return</span> <span class="s1">&#39;Load stopped successfully.&#39;</span>
             <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span><span class="s1">&#39;stopLoad rejected: incorrect stop secret.&#39;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="s1">&#39;Wrong secret.&#39;</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span><span class="s1">&#39;stopLoad rejected: a valid stop secret is required.&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="s1">&#39;Need valid secret to stop load.&#39;</span></div>
 
 
 <div class="viewcode-block" id="PneumaticPressureSampleCell.rinseCell">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.rinseCell">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;button_text&#39;</span><span class="p">:</span><span class="s1">&#39;Rinse Cell&#39;</span><span class="p">})</span>
-    <span class="k">def</span> <span class="nf">rinseCell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">cellname</span><span class="o">=</span><span class="s1">&#39;cell&#39;</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="s1">&#39;LOADED&#39;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s1">&#39;READY&#39;</span><span class="p">:</span>
-                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Rinsing despite READY state.  This is OK, just a little extra.  Lowering the arm to rinse.&#39;</span><span class="p">,</span><span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_arm_down</span><span class="p">()</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Cell in inconsistent state: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">relayboard</span><span class="o">.</span><span class="n">setChannels</span><span class="p">({</span><span class="s1">&#39;piston-vent&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span><span class="s1">&#39;postsample&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">})</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rinseCell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">cellname</span><span class="o">=</span><span class="s1">&#39;cell&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;rinseCell requested: state=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">, cellname=</span><span class="si">{</span><span class="n">cellname</span><span class="si">!r}</span><span class="s1">.&#39;</span><span class="p">)</span>
+        <span class="n">started</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+        <span class="n">phase</span> <span class="o">=</span> <span class="s1">&#39;checking cell state&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log_flow_state</span><span class="p">(</span><span class="s1">&#39;rinseCell starting&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="s1">&#39;LOADED&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s1">&#39;READY&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log_warning</span><span class="p">(</span><span class="s1">&#39;rinseCell: cell is already READY; lowering the arm for an extra rinse.&#39;</span><span class="p">)</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Rinsing despite READY state.  This is OK, just a little extra.  Lowering the arm to rinse.&#39;</span><span class="p">,</span><span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+                    <span class="n">phase</span> <span class="o">=</span> <span class="s1">&#39;lowering arm&#39;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_arm_down</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Cell in inconsistent state: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="s1">&#39;closing vent and opening postsample&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_channels_logged</span><span class="p">({</span><span class="s1">&#39;piston-vent&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span><span class="s1">&#39;postsample&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">},</span> <span class="s1">&#39;rinseCell flow path&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;rinseCell program: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;rinse_program&quot;</span><span class="p">])</span><span class="si">}</span><span class="s1"> steps, &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;scheduled wait time=</span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">wait</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">wait</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;rinse_program&quot;</span><span class="p">])</span><span class="si">:</span><span class="s1">g</span><span class="si">}</span><span class="s1"> s, &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;blowout_pressure=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;blowout_pressure&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> (used only for ctrlblow). &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;Program=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;rinse_program&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">.&#39;</span>
+            <span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">i</span><span class="p">,(</span><span class="n">step</span><span class="p">,</span><span class="n">waittime</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;rinse_program&#39;</span><span class="p">]):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">rinse_status</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Rinse Program Step </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;rinse_program&quot;</span><span class="p">])</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s1"> for </span><span class="si">{</span><span class="n">waittime</span><span class="si">}</span><span class="s1">s&#39;</span>
-            <span class="k">if</span> <span class="n">step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="s1">&#39;ctrlblow&#39;</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">pctrl</span><span class="o">.</span><span class="n">set_P</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;blowout_pressure&#39;</span><span class="p">])</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">relayboard</span><span class="o">.</span><span class="n">setChannels</span><span class="p">({</span><span class="n">step</span><span class="p">:</span><span class="kc">True</span><span class="p">})</span>
-            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">waittime</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="s1">&#39;ctrlblow&#39;</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">pctrl</span><span class="o">.</span><span class="n">set_P</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">relayboard</span><span class="o">.</span><span class="n">setChannels</span><span class="p">({</span><span class="n">step</span><span class="p">:</span><span class="kc">False</span><span class="p">})</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">relayboard</span><span class="o">.</span><span class="n">setChannels</span><span class="p">({</span><span class="s1">&#39;postsample&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">})</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_arm_up</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;READY&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rinse_status</span> <span class="o">=</span> <span class="s1">&#39;Not Rinsing&#39;</span></div>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,(</span><span class="n">step</span><span class="p">,</span><span class="n">waittime</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;rinse_program&#39;</span><span class="p">]):</span>
+                <span class="n">context</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;rinseCell step </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;rinse_program&quot;</span><span class="p">])</span><span class="si">}</span><span class="s1"> (</span><span class="si">{</span><span class="n">step</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s2">&quot;pause&quot;</span><span class="si">}</span><span class="s1">)&#39;</span>
+                <span class="n">phase</span> <span class="o">=</span> <span class="n">context</span>
+                <span class="n">step_started</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rinse_status</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Rinse Program Step </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;rinse_program&quot;</span><span class="p">])</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s1"> for </span><span class="si">{</span><span class="n">waittime</span><span class="si">}</span><span class="s1">s&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s1">: starting; duration=</span><span class="si">{</span><span class="n">waittime</span><span class="si">:</span><span class="s1">g</span><span class="si">}</span><span class="s1"> s.&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="s1">&#39;ctrlblow&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s1">: commanding regulated pressure=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;blowout_pressure&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">pctrl</span><span class="o">.</span><span class="n">set_P</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;blowout_pressure&#39;</span><span class="p">])</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s1">: pressure command completed.&#39;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_set_channels_logged</span><span class="p">({</span><span class="n">step</span><span class="p">:</span><span class="kc">True</span><span class="p">},</span> <span class="n">context</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s1">: waiting </span><span class="si">{</span><span class="n">waittime</span><span class="si">:</span><span class="s1">g</span><span class="si">}</span><span class="s1"> s.&#39;</span><span class="p">)</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">waittime</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="s1">&#39;ctrlblow&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s1">: commanding regulated pressure=0.&#39;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">pctrl</span><span class="o">.</span><span class="n">set_P</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s1">: pressure reset command completed.&#39;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_set_channels_logged</span><span class="p">({</span><span class="n">step</span><span class="p">:</span><span class="kc">False</span><span class="p">},</span> <span class="n">context</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s1">: completed in </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">step_started</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> s.&#39;</span><span class="p">)</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="s1">&#39;closing postsample after rinse&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_channels_logged</span><span class="p">({</span><span class="s1">&#39;postsample&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">},</span> <span class="s1">&#39;rinseCell finish&#39;</span><span class="p">)</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="s1">&#39;raising arm&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s1">&#39;rinseCell: rinse program complete; raising arm and venting.&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_arm_up</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;READY&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rinse_status</span> <span class="o">=</span> <span class="s1">&#39;Not Rinsing&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log_flow_state</span><span class="p">(</span><span class="s1">&#39;rinseCell completed&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;rinseCell completed in </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">started</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> s; state=READY.&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="ne">KeyboardInterrupt</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_error</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;rinseCell failed during </span><span class="si">{</span><span class="n">phase</span><span class="si">}</span><span class="s1"> after </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">started</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> s; &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;state=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">, rinse_status=</span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;rinse_status&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;unknown&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">: &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span></div>
 
     
 <div class="viewcode-block" id="PneumaticPressureSampleCell.rinseAll">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.rinseAll">[docs]</a>
-    <span class="k">def</span> <span class="nf">rinseAll</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rinseAll</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rinseCell</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="PneumaticPressureSampleCell.setRinseLevel">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.setRinseLevel">[docs]</a>
-    <span class="k">def</span> <span class="nf">setRinseLevel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vol</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setRinseLevel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vol</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rinse_tank_level</span> <span class="o">=</span> <span class="n">vol</span></div>
 
 
 <div class="viewcode-block" id="PneumaticPressureSampleCell.setWasteLevel">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.setWasteLevel">[docs]</a>
-    <span class="k">def</span> <span class="nf">setWasteLevel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vol</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setWasteLevel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vol</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">waste_tank_level</span> <span class="o">=</span> <span class="n">vol</span></div>
 
 
 <div class="viewcode-block" id="PneumaticPressureSampleCell.primeRinse">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.primeRinse">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;button_text&#39;</span><span class="p">:</span><span class="s1">&#39;Prime Rinse&#39;</span><span class="p">})</span>
-    <span class="k">def</span> <span class="nf">primeRinse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">waittime</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">primeRinse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">waittime</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="s1">&#39;READY&#39;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Cell in inconsistent state: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
@@ -817,7 +1108,7 @@
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.calibrate_sensor">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;button_text&#39;</span><span class="p">:</span><span class="s1">&#39;calibrate&#39;</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">:{}})</span>
-    <span class="k">def</span> <span class="nf">calibrate_sensor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calibrate_sensor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">ls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">:</span>
@@ -828,7 +1119,7 @@
 <div class="viewcode-block" id="PneumaticPressureSampleCell.read_sensor">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.read_sensor">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">read_sensor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_sensor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">ls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">:</span>
@@ -839,7 +1130,7 @@
 <div class="viewcode-block" id="PneumaticPressureSampleCell.read_sensor_poll">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.read_sensor_poll">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">(</span><span class="n">render_hint</span><span class="o">=</span><span class="s1">&#39;1d_plot&#39;</span><span class="p">,</span><span class="n">xlin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">ylin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span><span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Signal (V)&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">read_sensor_poll</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_sensor_poll</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">ls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">:</span>
@@ -852,7 +1143,7 @@
 <div class="viewcode-block" id="PneumaticPressureSampleCell.read_sensor_poll_load">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.read_sensor_poll_load">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">(</span><span class="n">render_hint</span><span class="o">=</span><span class="s1">&#39;1d_plot&#39;</span><span class="p">,</span><span class="n">xlin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">ylin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span><span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;Signal (V)&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">read_sensor_poll_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_sensor_poll_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">ls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">:</span>
@@ -862,11 +1153,11 @@
     
 <div class="viewcode-block" id="PneumaticPressureSampleCell.set_sensor_config">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.set_sensor_config">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_sensor_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_sensor_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="s1">&#39;sensor_n&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">[</span><span class="n">kwargs</span><span class="p">[</span><span class="n">sensor_n</span><span class="p">]]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">[</span><span class="n">kwargs</span><span class="p">[</span><span class="n">sensor_n</span><span class="p">]]</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>                        
+                <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">[</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;sensor_n&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">[</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;sensor_n&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>                        
             <span class="k">else</span><span class="p">:</span> <span class="c1"># assume it should apply to all</span>
                 <span class="k">for</span> <span class="n">ls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">:</span>
                     <span class="n">ls</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
@@ -875,7 +1166,7 @@
 
 <div class="viewcode-block" id="PneumaticPressureSampleCell.get_sensor_config">
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.get_sensor_config">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_sensor_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_sensor_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">ls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">:</span>
@@ -887,7 +1178,7 @@
 <a class="viewcode-back" href="../../../../_autosummary/AFL.automation.loading.PneumaticPressureSampleCell.html#AFL.automation.loading.PneumaticPressureSampleCell.PneumaticPressureSampleCell.sensor_reset">[docs]</a>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">unqueued</span><span class="p">()</span>
     <span class="nd">@Driver</span><span class="o">.</span><span class="n">quickbar</span><span class="p">(</span><span class="n">qb</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;button_text&#39;</span><span class="p">:</span><span class="s1">&#39;Reset Sensor&#39;</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">:{}})</span>
-    <span class="k">def</span> <span class="nf">sensor_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sensor_n</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sensor_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sensor_n</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">sensor_n</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">[</span><span class="n">sensor_n</span><span class="p">]</span><span class="o">.</span><span class="n">reset_poll</span><span class="p">()</span>
@@ -904,7 +1195,7 @@
                 <span class="k">for</span> <span class="n">ls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_stopper</span><span class="p">:</span>
                     <span class="n">ls</span><span class="o">.</span><span class="n">reset_poll</span><span class="p">()</span>
                     <span class="n">ls</span><span class="o">.</span><span class="n">reset_stopper</span><span class="p">()</span>
-                    <span class="k">if</span> <span class="n">ls_app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">ls</span><span class="o">.</span><span class="n">_app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="n">ls</span><span class="o">.</span><span class="n">poll</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app</span>
                         <span class="n">ls</span><span class="o">.</span><span class="n">stopper</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app</span>
                     <span class="k">if</span> <span class="n">ls</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -963,7 +1254,7 @@
         <span class="p">],</span>
 <span class="p">}</span>
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">AFL.automation.shared.launcher</span> <span class="kn">import</span> <span class="o">*</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">AFL.automation.shared.launcher</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 </pre></div>
 
                 </article>
@@ -993,8 +1284,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
 
 
   
@@ -1017,7 +1308,6 @@
 
   <p class="sphinx-version">
     Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
-    <br/>
   </p>
 </div>
       
@@ -1030,7 +1320,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
 </p></div>
       
     </div>

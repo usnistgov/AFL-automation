@@ -1,0 +1,26 @@
+AFL.automation.shared.tiled
+===========================
+
+.. automodule:: AFL.automation.shared.tiled
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_afl_home
+      get_tiled_client
+      resolve_tiled_config
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Path
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      TiledConfigurationError
+   

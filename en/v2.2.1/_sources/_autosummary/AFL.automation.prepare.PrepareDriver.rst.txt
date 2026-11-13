@@ -1,0 +1,25 @@
+AFL.automation.prepare.PrepareDriver
+====================================
+
+.. automodule:: AFL.automation.prepare.PrepareDriver
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      capture_task_video
+      listify
+      wraps
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MassBalance
+      MassBalanceDriver
+      PersistentConfig
+      PipetteAction
+      PrepareDriver
+      Solution
+   

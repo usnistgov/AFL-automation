@@ -1,0 +1,14 @@
+AFL.automation.loading.ViciMultiposSelector
+===========================================
+
+.. automodule:: AFL.automation.loading.ViciMultiposSelector
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      FlowSelector
+      SerialDevice
+      ViciMultiposSelector
+   

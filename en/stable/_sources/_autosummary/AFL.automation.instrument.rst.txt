@@ -17,6 +17,7 @@ AFL.automation.instrument
    CDSAXSLabview
    CHESSID3B
    DummySAS
+   EICClient
    FileCamera
    GPInterpolator
    I22SAXS

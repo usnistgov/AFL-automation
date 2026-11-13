@@ -1,0 +1,18 @@
+AFL.automation.loading.VirtualPneumaticPressureLoader
+=====================================================
+
+.. automodule:: AFL.automation.loading.VirtualPneumaticPressureLoader
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MultiChannelRelay
+      NoOpDigitalIn
+      NoOpPressureController
+      NoOpRelayBoard
+      PneumaticPressureSampleCell
+      PressureController
+      VirtualPneumaticPressureLoader
+   

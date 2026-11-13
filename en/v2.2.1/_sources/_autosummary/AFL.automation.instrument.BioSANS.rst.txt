@@ -1,0 +1,14 @@
+AFL.automation.instrument.BioSANS
+=================================
+
+.. automodule:: AFL.automation.instrument.BioSANS
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      BioSANS
+      Driver
+      MockEICClient
+   

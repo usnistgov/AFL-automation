@@ -1,0 +1,20 @@
+AFL.automation.shared.serialization
+===================================
+
+.. automodule:: AFL.automation.shared.serialization
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      deserialize
+      is_serialized
+      serialize
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      UnpicklingError
+   

@@ -17,4 +17,11 @@ AFL.automation.APIServer.Driver
       Driver
       DriverWebAppsMixin
       PersistentConfig
+      ProxyDriver
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      ProxyConnectionError
    

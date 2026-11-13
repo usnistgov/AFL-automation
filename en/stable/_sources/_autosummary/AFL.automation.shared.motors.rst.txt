@@ -1,0 +1,14 @@
+AFL.automation.shared.motors
+============================
+
+.. automodule:: AFL.automation.shared.motors
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Motor
+      ServoMotor
+      StepperMotor
+   

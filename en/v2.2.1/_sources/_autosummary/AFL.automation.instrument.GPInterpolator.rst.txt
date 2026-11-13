@@ -1,0 +1,13 @@
+AFL.automation.instrument.GPInterpolator
+========================================
+
+.. automodule:: AFL.automation.instrument.GPInterpolator
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ClusteredGPs
+      Interpolator
+   

@@ -1,0 +1,14 @@
+AFL.automation.instrument.VirtualInstrument
+===========================================
+
+.. automodule:: AFL.automation.instrument.VirtualInstrument
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Driver
+      ScatteringInstrument
+      VirtualInstrument
+   

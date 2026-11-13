@@ -1,0 +1,27 @@
+AFL.automation.prepare.OT2HTTPDriver
+====================================
+
+.. automodule:: AFL.automation.prepare.OT2HTTPDriver
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      ceil
+      floor
+      listify
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Driver
+      OT2DeckWebAppMixin
+      OT2HTTPDriver
+      Path
+      combinations_with_replacement
+      datetime
+      nullcontext
+      timezone
+   

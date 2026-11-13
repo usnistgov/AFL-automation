@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>AFL.automation.prepare.OT2HTTPDriver &#8212; AFL-automation  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/ntd2d.css?v=525a25f0" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../_static/_static/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_autosummary/AFL.automation.prepare.OT2HTTPDriver';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/logo_light.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="AFL.automation.prepare.OT2Prepare" href="AFL.automation.prepare.OT2Prepare.html" />
+    <link rel="prev" title="AFL.automation.prepare.OT2DeckWebAppMixin" href="AFL.automation.prepare.OT2DeckWebAppMixin.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+
+  <link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
+  <script src="https://code.jquery.com/jquery-3.6.2.min.js" type="text/javascript" defer="defer"></script>
+  
+
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo_text_large_light.svg" class="logo__image only-light" alt="AFL-automation  documentation - Home"/>
+    <img src="../_static/logo_text_large_dark.svg" class="logo__image only-dark pst-js-only" alt="AFL-automation  documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/installation.html">
+    Setup
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to/index.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanation/index.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../modules.html">
+    Modules
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/usnistgov/AFL-automation" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../modules.html">Modules</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../modules/apiserver.html">API Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/instrument.html">Instrument</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/loading.html">Loading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/mixcalc.html">Mixcalc</a></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="../modules/prepare.html">Prepare</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3 current active has-children"><a class="reference internal" href="AFL.automation.prepare.html">AFL.automation.prepare</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.BioSANSPrepare.html">AFL.automation.prepare.BioSANSPrepare</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.OT2DeckWebAppMixin.html">AFL.automation.prepare.OT2DeckWebAppMixin</a></li>
+<li class="toctree-l4 current active"><a aria-current="page" class="current reference internal" href="#">AFL.automation.prepare.OT2HTTPDriver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.OT2Prepare.html">AFL.automation.prepare.OT2Prepare</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.OT2_Driver.html">AFL.automation.prepare.OT2_Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.PipetteAction.html">AFL.automation.prepare.PipetteAction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.PrepareDriver.html">AFL.automation.prepare.PrepareDriver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.VirtualOT2HTTPDriver.html">AFL.automation.prepare.VirtualOT2HTTPDriver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AFL.automation.prepare.utilities.html">AFL.automation.prepare.utilities</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/shared.html">Shared</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../reference/index.html" class="nav-link">Reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../api.html" class="nav-link">API Reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="AFL.automation.prepare.html" class="nav-link">AFL.automation.prepare</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">AFL.automation.prepare.OT2HTTPDriver</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-AFL.automation.prepare.OT2HTTPDriver">
+<span id="afl-automation-prepare-ot2httpdriver"></span><h1>AFL.automation.prepare.OT2HTTPDriver<a class="headerlink" href="#module-AFL.automation.prepare.OT2HTTPDriver" title="Link to this heading">#</a></h1>
+<p class="rubric">Functions</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ceil</span></code>(x, /)</p></td>
+<td><p>Return the ceiling of x as an Integral.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">floor</span></code>(x, /)</p></td>
+<td><p>Return the floor of x as an Integral.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">listify</span></code>(obj)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Classes</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Driver</span></code>(name[, defaults, overrides, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">OT2DeckWebAppMixin</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver" title="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OT2HTTPDriver</span></code></a>([overrides])</p></td>
+<td><p>HTTP-backed Opentrons OT-2 driver.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Path</span></code>(*args, **kwargs)</p></td>
+<td><p>PurePath subclass that can make system calls.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">combinations_with_replacement</span></code>(iterable, r)</p></td>
+<td><p>Return successive r-length combinations of elements in the iterable allowing individual elements to have successive repeats.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">datetime</span></code>(year, month, day[, hour[, minute[, ...)</p></td>
+<td><p>The year, month and day arguments are required.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nullcontext</span></code>([enter_result])</p></td>
+<td><p>Context manager that does no additional processing.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">timezone</span></code></p></td>
+<td><p>Fixed offset from UTC implementation of tzinfo.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">AFL.automation.prepare.OT2HTTPDriver.</span></span><span class="sig-name descname"><span class="pre">OT2HTTPDriver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver" title="Link to this definition">#</a></dt>
+<dd><p>HTTP-backed Opentrons OT-2 driver.</p>
+<p>This driver wraps the Opentrons HTTP API and persists deck state in the
+AFL driver configuration so labware, modules, instruments, tip usage, and
+preparation targets can survive run recreation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>overrides</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>, </em><em>optional</em>) – Configuration overrides merged into <a class="reference internal" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.defaults" title="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.defaults"><code class="xref py py-attr docutils literal notranslate"><span class="pre">defaults</span></code></a> during driver
+initialization.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The driver recreates robot runs on demand and reloads previously configured
+deck state when a run expires or is recreated.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span> <span class="o">=</span> <span class="n">OT2HTTPDriver</span><span class="p">({</span><span class="s2">&quot;robot_ip&quot;</span><span class="p">:</span> <span class="s2">&quot;192.168.1.50&quot;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span><span class="o">.</span><span class="n">load_labware</span><span class="p">(</span><span class="s2">&quot;opentrons_96_tiprack_300ul&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span><span class="o">.</span><span class="n">load_instrument</span><span class="p">(</span><span class="s2">&quot;p300_single&quot;</span><span class="p">,</span> <span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;1&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span><span class="s2">&quot;2A1&quot;</span><span class="p">,</span> <span class="s2">&quot;3A1&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.PIPETTE_NAME_ALIASES">
+<span class="sig-name descname"><span class="pre">PIPETTE_NAME_ALIASES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'p10':</span> <span class="pre">'p10_single',</span> <span class="pre">'p1000':</span> <span class="pre">'p1000_single',</span> <span class="pre">'p1000_single':</span> <span class="pre">'p1000_single',</span> <span class="pre">'p10_single':</span> <span class="pre">'p10_single',</span> <span class="pre">'p10_single_gen1':</span> <span class="pre">'p10_single',</span> <span class="pre">'p300':</span> <span class="pre">'p300_single',</span> <span class="pre">'p300_single':</span> <span class="pre">'p300_single'}</span></em><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.PIPETTE_NAME_ALIASES" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.EXPECTED_TIPRACK_TOKEN">
+<span class="sig-name descname"><span class="pre">EXPECTED_TIPRACK_TOKEN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'p1000_single':</span> <span class="pre">'1000ul',</span> <span class="pre">'p10_single':</span> <span class="pre">'10ul',</span> <span class="pre">'p300_single':</span> <span class="pre">'300ul'}</span></em><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.EXPECTED_TIPRACK_TOKEN" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.DECK_STREAM_REQUEST_TIMEOUT_SECONDS">
+<span class="sig-name descname"><span class="pre">DECK_STREAM_REQUEST_TIMEOUT_SECONDS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">15</span></em><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.DECK_STREAM_REQUEST_TIMEOUT_SECONDS" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_HTTP_CONNECT_TIMEOUT_SECONDS">
+<span class="sig-name descname"><span class="pre">OT2_HTTP_CONNECT_TIMEOUT_SECONDS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_HTTP_CONNECT_TIMEOUT_SECONDS" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_HTTP_READ_TIMEOUT_SECONDS">
+<span class="sig-name descname"><span class="pre">OT2_HTTP_READ_TIMEOUT_SECONDS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">15</span></em><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_HTTP_READ_TIMEOUT_SECONDS" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_COMMAND_TIMEOUT_SECONDS">
+<span class="sig-name descname"><span class="pre">OT2_COMMAND_TIMEOUT_SECONDS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">60</span></em><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_COMMAND_TIMEOUT_SECONDS" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_COMMAND_POLL_INTERVAL_SECONDS">
+<span class="sig-name descname"><span class="pre">OT2_COMMAND_POLL_INTERVAL_SECONDS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.25</span></em><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_COMMAND_POLL_INTERVAL_SECONDS" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_STOP_TIMEOUT_SECONDS">
+<span class="sig-name descname"><span class="pre">OT2_STOP_TIMEOUT_SECONDS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_STOP_TIMEOUT_SECONDS" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_TERMINAL_COMMAND_STATES">
+<span class="sig-name descname"><span class="pre">OT2_TERMINAL_COMMAND_STATES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'error',</span> <span class="pre">'failed',</span> <span class="pre">'stopped',</span> <span class="pre">'succeeded'}</span></em><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_TERMINAL_COMMAND_STATES" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_TERMINAL_RUN_STATES">
+<span class="sig-name descname"><span class="pre">OT2_TERMINAL_RUN_STATES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'error',</span> <span class="pre">'failed',</span> <span class="pre">'stopped',</span> <span class="pre">'succeeded'}</span></em><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_TERMINAL_RUN_STATES" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.defaults">
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'available_tips':</span> <span class="pre">{},</span> <span class="pre">'deck_stream_video_fps':</span> <span class="pre">1,</span> <span class="pre">'enable_deck_stream':</span> <span class="pre">True,</span> <span class="pre">'loaded_instruments':</span> <span class="pre">{},</span> <span class="pre">'loaded_labware':</span> <span class="pre">{},</span> <span class="pre">'loaded_modules':</span> <span class="pre">{},</span> <span class="pre">'occupied_sample_locations':</span> <span class="pre">[],</span> <span class="pre">'ot2_command_poll_interval_seconds':</span> <span class="pre">0.25,</span> <span class="pre">'ot2_command_timeout_seconds':</span> <span class="pre">60,</span> <span class="pre">'ot2_stop_timeout_seconds':</span> <span class="pre">10,</span> <span class="pre">'prep_targets':</span> <span class="pre">[],</span> <span class="pre">'reserved_stock_tips':</span> <span class="pre">[],</span> <span class="pre">'robot_ip':</span> <span class="pre">'127.0.0.1',</span> <span class="pre">'robot_port':</span> <span class="pre">'31950',</span> <span class="pre">'stock_tip_locations':</span> <span class="pre">{},</span> <span class="pre">'stock_tip_reservations':</span> <span class="pre">{},</span> <span class="pre">'tip_rack_offset':</span> <span class="pre">{'x':</span> <span class="pre">0,</span> <span class="pre">'y':</span> <span class="pre">0,</span> <span class="pre">'z':</span> <span class="pre">0}}</span></em><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.defaults" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.__init__" title="Link to this definition">#</a></dt>
+<dd><p>Initialize the OT-2 HTTP driver.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>overrides</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>, </em><em>optional</em>) – Configuration values that override the class defaults.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span> <span class="o">=</span> <span class="n">OT2HTTPDriver</span><span class="p">({</span><span class="s2">&quot;robot_ip&quot;</span><span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="s2">&quot;robot_port&quot;</span><span class="p">:</span> <span class="s2">&quot;31950&quot;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span><span class="o">.</span><span class="n">base_url</span>
+<span class="go">&#39;http://127.0.0.1:31950&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.log_info">
+<span class="sig-name descname"><span class="pre">log_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.log_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.log_info" title="Link to this definition">#</a></dt>
+<dd><p>Log an informational message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Message to emit.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.log_error">
+<span class="sig-name descname"><span class="pre">log_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.log_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.log_error" title="Link to this definition">#</a></dt>
+<dd><p>Log an error message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Message to emit.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.log_debug">
+<span class="sig-name descname"><span class="pre">log_debug</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.log_debug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.log_debug" title="Link to this definition">#</a></dt>
+<dd><p>Log a debug message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Message to emit.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.log_warning">
+<span class="sig-name descname"><span class="pre">log_warning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.log_warning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.log_warning" title="Link to this definition">#</a></dt>
+<dd><p>Log a warning message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Message to emit.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset_prep_targets">
+<span class="sig-name descname"><span class="pre">reset_prep_targets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.reset_prep_targets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset_prep_targets" title="Link to this definition">#</a></dt>
+<dd><p>Clear queued preparation targets.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span><span class="o">.</span><span class="n">reset_prep_targets</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.add_prep_targets">
+<span class="sig-name descname"><span class="pre">add_prep_targets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.add_prep_targets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.add_prep_targets" title="Link to this definition">#</a></dt>
+<dd><p>Append preparation target locations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>targets</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><em>sequence</em><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Target well locations to queue.</p></li>
+<li><p><strong>reset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, clear existing targets before appending.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span><span class="o">.</span><span class="n">add_prep_targets</span><span class="p">([</span><span class="s2">&quot;4A1&quot;</span><span class="p">,</span> <span class="s2">&quot;4A2&quot;</span><span class="p">],</span> <span class="n">reset</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_prep_target">
+<span class="sig-name descname"><span class="pre">get_prep_target</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.get_prep_target"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_prep_target" title="Link to this definition">#</a></dt>
+<dd><p>Pop and return the next queued preparation target.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Next queued target location.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.status">
+<span class="sig-name descname"><span class="pre">status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.status" title="Link to this definition">#</a></dt>
+<dd><p>Return human-readable OT-2 status lines.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Status lines describing prep targets, tip state, session state,
+active pipettes, and loaded labware.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a> of <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset_tipracks">
+<span class="sig-name descname"><span class="pre">reset_tipracks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'both'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.reset_tipracks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset_tipracks" title="Link to this definition">#</a></dt>
+<dd><p>Reset available-tip tracking for one or more mounts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mount</strong> (<em>{&quot;left&quot;</em><em>, </em><em>&quot;right&quot;</em><em>, </em><em>&quot;both&quot;}</em><em>, </em><em>default=&quot;both&quot;</em>) – Mount selection to reset.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset" title="Link to this definition">#</a></dt>
+<dd><p>Reset the active OT-2 session, protocol, and persisted deck state.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset_deck">
+<span class="sig-name descname"><span class="pre">reset_deck</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.reset_deck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset_deck" title="Link to this definition">#</a></dt>
+<dd><p>Clear persisted deck configuration and related in-memory state.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.home">
+<span class="sig-name descname"><span class="pre">home</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.home"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.home" title="Link to this definition">#</a></dt>
+<dd><p>Home the robot’s axes using the dedicated /robot/home endpoint.</p>
+<p>This endpoint is a direct control endpoint and doesn’t require creating a run.
+It can be used to home all axes at once or specific axes as needed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.parse_well">
+<span class="sig-name descname"><span class="pre">parse_well</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.parse_well"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.parse_well" title="Link to this definition">#</a></dt>
+<dd><p>Split a deck location into slot and well components.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>loc</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Deck location such as <code class="docutils literal notranslate"><span class="pre">&quot;1A1&quot;</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Two-item tuple <code class="docutils literal notranslate"><span class="pre">(slot,</span> <span class="pre">well)</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_wells">
+<span class="sig-name descname"><span class="pre">get_wells</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">locs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.get_wells"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_wells" title="Link to this definition">#</a></dt>
+<dd><p>Convert deck locations into validated HTTP API well descriptors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>locs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><em>sequence</em><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Deck locations in <code class="docutils literal notranslate"><span class="pre">slot+well</span></code> form, for example <code class="docutils literal notranslate"><span class="pre">&quot;1A1&quot;</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Well descriptors containing <code class="docutils literal notranslate"><span class="pre">labwareId</span></code> and <code class="docutils literal notranslate"><span class="pre">wellName</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a> of <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the slot has no loaded labware or the stored labware metadata is
+    malformed.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#AssertionError" title="(in Python v3.15)"><strong>AssertionError</strong></a> – If the requested well is not valid for the loaded labware.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_available_wells">
+<span class="sig-name descname"><span class="pre">get_available_wells</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slot</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.get_available_wells"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_available_wells" title="Link to this definition">#</a></dt>
+<dd><p>Return unoccupied well locations for the labware loaded in a slot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>slot</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – OT-2 deck slot containing loaded labware.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Deck locations in <code class="docutils literal notranslate"><span class="pre">slot+well</span></code> form for wells not listed in
+<code class="docutils literal notranslate"><span class="pre">occupied_sample_locations</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)">list</a> of <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If no labware is loaded in the requested slot.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.send_labware">
+<span class="sig-name descname"><span class="pre">send_labware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labware_def</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_run_status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reload_loaded_labware</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.send_labware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.send_labware" title="Link to this definition">#</a></dt>
+<dd><p>Persist and upload a custom labware definition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labware_def</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Opentrons labware definition.</p></li>
+<li><p><strong>check_run_status</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=True</em>) – If <code class="docutils literal notranslate"><span class="pre">False</span></code>, skip the run-status GET check when ensuring a run.</p></li>
+<li><p><strong>reload_loaded_labware</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=True</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, reload matching active labware after upload.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Upload metadata including definition URI, version, and content hash.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_labware">
+<span class="sig-name descname"><span class="pre">load_labware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_run_status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.load_labware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_labware" title="Link to this definition">#</a></dt>
+<dd><p>Load labware into a deck slot or module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Labware load name or <code class="docutils literal notranslate"><span class="pre">namespace/load_name</span></code> key.</p></li>
+<li><p><strong>slot</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Deck slot identifier.</p></li>
+<li><p><strong>module</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Module identifier when loading onto a module.</p></li>
+<li><p><strong>check_run_status</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=True</em>) – If <code class="docutils literal notranslate"><span class="pre">False</span></code>, skip the run-status GET check when ensuring a run.</p></li>
+<li><p><strong>**kwargs</strong> – Additional options, including <code class="docutils literal notranslate"><span class="pre">labware_json</span></code> for custom labware.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Loaded labware identifier returned by the robot.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_module">
+<span class="sig-name descname"><span class="pre">load_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_run_status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.load_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_module" title="Link to this definition">#</a></dt>
+<dd><p>Load a module into a deck slot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Module model name.</p></li>
+<li><p><strong>slot</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Deck slot identifier.</p></li>
+<li><p><strong>check_run_status</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=True</em>) – If <code class="docutils literal notranslate"><span class="pre">False</span></code>, skip the run-status GET check when ensuring a run.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Loaded module identifier returned by the robot.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_instrument">
+<span class="sig-name descname"><span class="pre">load_instrument</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tip_rack_slots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_run_status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_pipettes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.load_instrument"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_instrument" title="Link to this definition">#</a></dt>
+<dd><p>Load a pipette and initialize tip tracking.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Pipette name or alias.</p></li>
+<li><p><strong>mount</strong> (<em>{&quot;left&quot;</em><em>, </em><em>&quot;right&quot;}</em>) – Mount on which to load the pipette.</p></li>
+<li><p><strong>tip_rack_slots</strong> (<em>sequence</em><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Slots containing compatible tipracks.</p></li>
+<li><p><strong>reload</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, preserve existing tip availability during run reload.</p></li>
+<li><p><strong>check_run_status</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=True</em>) – If <code class="docutils literal notranslate"><span class="pre">False</span></code>, skip the run-status GET check when ensuring a run.</p></li>
+<li><p><strong>update_pipettes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=True</em>) – If <code class="docutils literal notranslate"><span class="pre">False</span></code>, skip refreshing attached pipette metadata.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Loaded pipette identifier returned by the robot.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.mix">
+<span class="sig-name descname"><span class="pre">mix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repetitions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.mix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.mix" title="Link to this definition">#</a></dt>
+<dd><p>Mix liquid in place by repeated aspirate/dispense cycles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>volume</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Mix volume in microliters.</p></li>
+<li><p><strong>location</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Deck location to mix.</p></li>
+<li><p><strong>repetitions</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>default=1</em>) – Number of aspirate/dispense cycles.</p></li>
+<li><p><strong>**kwargs</strong> – Reserved for future compatibility.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.transfer">
+<span class="sig-name descname"><span class="pre">transfer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mix_before</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mix_after</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">air_gap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspirate_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dispense_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mix_aspirate_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mix_dispense_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blow_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post_aspirate_delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspirate_equilibration_delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post_dispense_delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_tip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_tip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_new_tip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_top</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_top_z_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_z_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tip_rack_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_tip_z_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fast_mixing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">touch_tip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tip_location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tip_locations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.transfer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.transfer" title="Link to this definition">#</a></dt>
+<dd><p>Transfer liquid between two deck locations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Source deck location such as <code class="docutils literal notranslate"><span class="pre">&quot;2A1&quot;</span></code>.</p></li>
+<li><p><strong>dest</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Destination deck location such as <code class="docutils literal notranslate"><span class="pre">&quot;3B1&quot;</span></code>.</p></li>
+<li><p><strong>volume</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Requested transfer volume in microliters.</p></li>
+<li><p><strong>mix_before</strong> (<em>sequence</em><em> of </em><em>int and float</em><em>, </em><em>optional</em>) – Two-item sequence <code class="docutils literal notranslate"><span class="pre">(repetitions,</span> <span class="pre">volume_ul)</span></code> applied before the
+aspirate step.</p></li>
+<li><p><strong>mix_after</strong> (<em>sequence</em><em> of </em><em>int and float</em><em>, </em><em>optional</em>) – Two-item sequence <code class="docutils literal notranslate"><span class="pre">(repetitions,</span> <span class="pre">volume_ul)</span></code> applied after the
+dispense step.</p></li>
+<li><p><strong>air_gap</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>default=0</em>) – Air gap volume in microliters.</p></li>
+<li><p><strong>aspirate_rate</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Aspirate flow rate in microliters per second.</p></li>
+<li><p><strong>dispense_rate</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Dispense flow rate in microliters per second.</p></li>
+<li><p><strong>mix_aspirate_rate</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Aspirate flow rate used during mix cycles.</p></li>
+<li><p><strong>mix_dispense_rate</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Dispense flow rate used during mix cycles.</p></li>
+<li><p><strong>blow_out</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, perform a blow-out after dispensing.</p></li>
+<li><p><strong>post_aspirate_delay</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>default=0.0</em>) – Delay in seconds after moving above the source well.</p></li>
+<li><p><strong>aspirate_equilibration_delay</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>default=0.0</em>) – Delay in seconds while the tip remains in the source liquid after
+aspirating.</p></li>
+<li><p><strong>post_dispense_delay</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>default=0.0</em>) – Delay in seconds after dispensing.</p></li>
+<li><p><strong>drop_tip</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=True</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, discard the tip after the transfer.</p></li>
+<li><p><strong>return_tip</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, return the tip to its origin instead of discarding it.</p></li>
+<li><p><strong>force_new_tip</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, force a fresh tip between split sub-transfers.</p></li>
+<li><p><strong>to_top</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=True</em>) – Dispense at the top of the destination well.</p></li>
+<li><p><strong>to_center</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – Dispense at the center of the destination well.</p></li>
+<li><p><strong>to_top_z_offset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>default=0</em>) – Additional z-offset applied when dispensing to the top.</p></li>
+<li><p><strong>source_z_offset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>default=0</em>) – Additional z-offset applied when aspirating from the source.</p></li>
+<li><p><strong>tip_rack_offset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>, </em><em>optional</em>) – Offset mapping with <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code>, and <code class="docutils literal notranslate"><span class="pre">z</span></code> keys used for tip pickup
+and tip return.</p></li>
+<li><p><strong>return_tip_z_offset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Return-only z-offset applied when returning a tip to its origin.
+If omitted, the existing <code class="docutils literal notranslate"><span class="pre">tip_rack_offset</span></code> z value is used.</p></li>
+<li><p><strong>fast_mixing</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – Reserved flag for higher-level callers.</p></li>
+<li><p><strong>touch_tip</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=False</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, touch the tip to the destination well after dispense.</p></li>
+<li><p><strong>tip_location</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Explicit tip location to use, for example <code class="docutils literal notranslate"><span class="pre">&quot;1A1&quot;</span></code>.</p></li>
+<li><p><strong>tip_locations</strong> (<em>sequence</em><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Candidate explicit tip locations.  When a transfer plan uses more
+than one pipette mount, the matching candidate is used for each
+mount.</p></li>
+<li><p><strong>**kwargs</strong> – Additional compatibility aliases such as <code class="docutils literal notranslate"><span class="pre">blowout</span></code> and
+<code class="docutils literal notranslate"><span class="pre">touchTip</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Structured transfer metadata including selected pipette, subtransfer
+volumes, source and destination well metadata, and applied options.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the transfer request is invalid or no suitable pipette is loaded.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.15)"><strong>RuntimeError</strong></a> – If the underlying robot command fails.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span><span class="s2">&quot;2A1&quot;</span><span class="p">,</span> <span class="s2">&quot;3A1&quot;</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span><span class="o">.</span><span class="n">transfer</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;2A1&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;3A1&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="mi">50</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">mix_before</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">40</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">return_tip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">tip_rack_offset</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">},</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.pickup_tip">
+<span class="sig-name descname"><span class="pre">pickup_tip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tip_location</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tip_rack_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.pickup_tip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.pickup_tip" title="Link to this definition">#</a></dt>
+<dd><p>Pick up a specific tip from a deck tip location.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tip_location</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Deck tip location such as <code class="docutils literal notranslate"><span class="pre">&quot;1A2&quot;</span></code>.</p></li>
+<li><p><strong>tip_rack_offset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>, </em><em>optional</em>) – Offset mapping with <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code>, and <code class="docutils literal notranslate"><span class="pre">z</span></code> keys applied during
+pickup.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pickup metadata including mount, pipette, and requested tip
+location.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the requested tip location is invalid or unavailable.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.15)"><strong>RuntimeError</strong></a> – If another tip is already attached.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.return_tip">
+<span class="sig-name descname"><span class="pre">return_tip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tip_location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tip_rack_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_tip_z_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.return_tip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.return_tip" title="Link to this definition">#</a></dt>
+<dd><p>Return the currently attached tip to its original tiprack well.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tip_location</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Expected current tip location such as <code class="docutils literal notranslate"><span class="pre">&quot;1A2&quot;</span></code>. When provided,
+this is validated against the attached tip before returning it.</p></li>
+<li><p><strong>tip_rack_offset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>, </em><em>optional</em>) – Offset mapping with <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code>, and <code class="docutils literal notranslate"><span class="pre">z</span></code> keys applied while
+moving to the return location.</p></li>
+<li><p><strong>return_tip_z_offset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Return-only z-offset applied during the return operation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Return metadata including the tip origin and status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the requested tip location does not match the attached tip.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_aspirate_rate">
+<span class="sig-name descname"><span class="pre">set_aspirate_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">150</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipette</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.set_aspirate_rate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_aspirate_rate" title="Link to this definition">#</a></dt>
+<dd><p>Set stored aspirate flow rate for one or more active pipettes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_dispense_rate">
+<span class="sig-name descname"><span class="pre">set_dispense_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipette</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.set_dispense_rate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_dispense_rate" title="Link to this definition">#</a></dt>
+<dd><p>Set stored dispense flow rate for one or more active pipettes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_gantry_speed">
+<span class="sig-name descname"><span class="pre">set_gantry_speed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">speed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">400</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.set_gantry_speed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_gantry_speed" title="Link to this definition">#</a></dt>
+<dd><p>Record a requested gantry speed change.</p>
+<p class="rubric">Notes</p>
+<p>The HTTP driver currently logs the request but does not apply it through
+the robot server.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_pipette">
+<span class="sig-name descname"><span class="pre">get_pipette</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'min_transfers'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.get_pipette"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_pipette" title="Link to this definition">#</a></dt>
+<dd><p>Select the best loaded pipette for a requested volume.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>volume</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Requested transfer volume in microliters.</p></li>
+<li><p><strong>method</strong> (<em>{&quot;min_transfers&quot;</em><em>, </em><em>&quot;uncertainty&quot;}</em><em>, </em><em>default=&quot;min_transfers&quot;</em>) – Selection strategy.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Selected pipette metadata including mount, volume range, and number
+of required transfers.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_aspirate_rate">
+<span class="sig-name descname"><span class="pre">get_aspirate_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipette</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.get_aspirate_rate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_aspirate_rate" title="Link to this definition">#</a></dt>
+<dd><p>Return the stored aspirate flow rate for a pipette.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_dispense_rate">
+<span class="sig-name descname"><span class="pre">get_dispense_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipette</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.get_dispense_rate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_dispense_rate" title="Link to this definition">#</a></dt>
+<dd><p>Return the stored dispense flow rate for a pipette.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_shake">
+<span class="sig-name descname"><span class="pre">set_shake</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rpm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.set_shake"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_shake" title="Link to this definition">#</a></dt>
+<dd><p>Set heater-shaker speed and wait for the target RPM.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.stop_shake">
+<span class="sig-name descname"><span class="pre">stop_shake</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.stop_shake"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.stop_shake" title="Link to this definition">#</a></dt>
+<dd><p>Stop heater-shaker motion.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_shaker_temp">
+<span class="sig-name descname"><span class="pre">set_shaker_temp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.set_shaker_temp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_shaker_temp" title="Link to this definition">#</a></dt>
+<dd><p>Set heater-shaker target temperature.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.stop_shaker_heat">
+<span class="sig-name descname"><span class="pre">stop_shaker_heat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.stop_shaker_heat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.stop_shaker_heat" title="Link to this definition">#</a></dt>
+<dd><p>Deactivate heater-shaker heating.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.unlatch_shaker">
+<span class="sig-name descname"><span class="pre">unlatch_shaker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.unlatch_shaker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.unlatch_shaker" title="Link to this definition">#</a></dt>
+<dd><p>Open the heater-shaker labware latch.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.latch_shaker">
+<span class="sig-name descname"><span class="pre">latch_shaker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.latch_shaker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.latch_shaker" title="Link to this definition">#</a></dt>
+<dd><p>Close the heater-shaker labware latch.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_shaker_temp">
+<span class="sig-name descname"><span class="pre">get_shaker_temp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.get_shaker_temp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_shaker_temp" title="Link to this definition">#</a></dt>
+<dd><p>Return current and target heater-shaker temperatures.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_shake_rpm">
+<span class="sig-name descname"><span class="pre">get_shake_rpm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.get_shake_rpm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_shake_rpm" title="Link to this definition">#</a></dt>
+<dd><p>Return heater-shaker speed status, current RPM, and target RPM.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_shake_latch_status">
+<span class="sig-name descname"><span class="pre">get_shake_latch_status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.get_shake_latch_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_shake_latch_status" title="Link to this definition">#</a></dt>
+<dd><p>Return the heater-shaker latch status string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_tempmodule_temperature">
+<span class="sig-name descname"><span class="pre">set_tempmodule_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">temperature_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hold_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.set_tempmodule_temperature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_tempmodule_temperature" title="Link to this definition">#</a></dt>
+<dd><p>Set a temperature module target and optionally wait to stabilize.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Current and target temperatures after stabilization.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)">tuple</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.deactivate_tempmodule">
+<span class="sig-name descname"><span class="pre">deactivate_tempmodule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.deactivate_tempmodule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.deactivate_tempmodule" title="Link to this definition">#</a></dt>
+<dd><p>Deactivate a temperature module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Result returned by <code class="xref py py-meth docutils literal notranslate"><span class="pre">_execute_atomic_command()</span></code>.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)">bool</a> or <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_tempmodule_status">
+<span class="sig-name descname"><span class="pre">get_tempmodule_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.get_tempmodule_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_tempmodule_status" title="Link to this definition">#</a></dt>
+<dd><p>Return raw tempdeck status data from the modules endpoint.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.clear_runs">
+<span class="sig-name descname"><span class="pre">clear_runs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.clear_runs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.clear_runs" title="Link to this definition">#</a></dt>
+<dd><p>Stop idle OT-2 runs while preserving deck and tip configuration.</p>
+<p>This queued command waits for preceding AFL tasks to finish. Only runs
+reported as <code class="docutils literal notranslate"><span class="pre">idle</span></code> are stopped; running, paused, and terminal runs
+are left alone. Run history is retained on the robot. If the cached
+run is cleared, the next robot command creates a fresh run and reloads
+the configured deck.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>default=10.0</em>) – Maximum number of seconds to wait for all stop confirmations.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Cleared run identifiers and their confirmed terminal states.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.15)"><strong>RuntimeError</strong></a> – If runs cannot be listed, stopped, or confirmed as terminal.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TimeoutError" title="(in Python v3.15)"><strong>TimeoutError</strong></a> – If a stop is not confirmed within <code class="docutils literal notranslate"><span class="pre">timeout</span></code>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">timeout</span></code> is not finite and positive.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.emergency_stop">
+<span class="sig-name descname"><span class="pre">emergency_stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.emergency_stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.emergency_stop" title="Link to this definition">#</a></dt>
+<dd><p>Stop every nonterminal run on the OT-2 and clear local run state.</p>
+<p>This command is intentionally unqueued so it remains available while a
+queued robot command is blocked.  It asks the Opentrons server to stop
+each active run, then waits for every run to reach a terminal state
+before forgetting the cached run identifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>default=10.0</em>) – Maximum number of seconds to wait for stop confirmation.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The run identifiers stopped by this call and their final states.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.15)"><strong>RuntimeError</strong></a> – If runs cannot be listed, a stop request fails, or a run does not
+    reach a terminal state before the timeout.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">timeout</span></code> is not finite and positive.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_tip">
+<span class="sig-name descname"><span class="pre">get_tip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mount</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.get_tip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_tip" title="Link to this definition">#</a></dt>
+<dd><p>Reserve and return the next available tip for a mount.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_tip_status">
+<span class="sig-name descname"><span class="pre">get_tip_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.get_tip_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_tip_status" title="Link to this definition">#</a></dt>
+<dd><p>Return human-readable tip availability status.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mount</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Specific mount to report. If omitted, report all mounts.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tip availability summary.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.make_align_script">
+<span class="sig-name descname"><span class="pre">make_align_script</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AFL/automation/prepare/OT2HTTPDriver.html#OT2HTTPDriver.make_align_script"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.make_align_script" title="Link to this definition">#</a></dt>
+<dd><p>Generate an Opentrons Python Protocol API script to verify alignment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Output path for the generated protocol script.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The generated script recreates the current deck state and moves each
+loaded pipette to the top of well <code class="docutils literal notranslate"><span class="pre">A1</span></code> for each non-tiprack labware.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span><span class="o">.</span><span class="n">make_align_script</span><span class="p">(</span><span class="s2">&quot;align_check.py&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="AFL.automation.prepare.OT2DeckWebAppMixin.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">AFL.automation.prepare.OT2DeckWebAppMixin</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="AFL.automation.prepare.OT2Prepare.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">AFL.automation.prepare.OT2Prepare</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.PIPETTE_NAME_ALIASES"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.PIPETTE_NAME_ALIASES</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.EXPECTED_TIPRACK_TOKEN"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.EXPECTED_TIPRACK_TOKEN</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.DECK_STREAM_REQUEST_TIMEOUT_SECONDS"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.DECK_STREAM_REQUEST_TIMEOUT_SECONDS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_HTTP_CONNECT_TIMEOUT_SECONDS"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.OT2_HTTP_CONNECT_TIMEOUT_SECONDS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_HTTP_READ_TIMEOUT_SECONDS"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.OT2_HTTP_READ_TIMEOUT_SECONDS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_COMMAND_TIMEOUT_SECONDS"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.OT2_COMMAND_TIMEOUT_SECONDS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_COMMAND_POLL_INTERVAL_SECONDS"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.OT2_COMMAND_POLL_INTERVAL_SECONDS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_STOP_TIMEOUT_SECONDS"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.OT2_STOP_TIMEOUT_SECONDS</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_TERMINAL_COMMAND_STATES"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.OT2_TERMINAL_COMMAND_STATES</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.OT2_TERMINAL_RUN_STATES"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.OT2_TERMINAL_RUN_STATES</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.defaults"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.defaults</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.__init__"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.__init__()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.log_info"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.log_info()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.log_error"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.log_error()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.log_debug"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.log_debug()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.log_warning"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.log_warning()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset_prep_targets"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.reset_prep_targets()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.add_prep_targets"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.add_prep_targets()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_prep_target"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.get_prep_target()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.status"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.status()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset_tipracks"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.reset_tipracks()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.reset()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.reset_deck"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.reset_deck()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.home"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.home()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.parse_well"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.parse_well()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_wells"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.get_wells()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_available_wells"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.get_available_wells()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.send_labware"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.send_labware()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_labware"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.load_labware()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_module"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.load_module()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.load_instrument"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.load_instrument()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.mix"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.mix()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.transfer"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.transfer()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.pickup_tip"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.pickup_tip()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.return_tip"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.return_tip()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_aspirate_rate"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.set_aspirate_rate()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_dispense_rate"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.set_dispense_rate()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_gantry_speed"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.set_gantry_speed()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_pipette"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.get_pipette()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_aspirate_rate"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.get_aspirate_rate()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_dispense_rate"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.get_dispense_rate()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_shake"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.set_shake()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.stop_shake"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.stop_shake()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_shaker_temp"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.set_shaker_temp()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.stop_shaker_heat"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.stop_shaker_heat()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.unlatch_shaker"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.unlatch_shaker()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.latch_shaker"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.latch_shaker()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_shaker_temp"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.get_shaker_temp()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_shake_rpm"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.get_shake_rpm()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_shake_latch_status"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.get_shake_latch_status()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.set_tempmodule_temperature"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.set_tempmodule_temperature()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.deactivate_tempmodule"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.deactivate_tempmodule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_tempmodule_status"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.get_tempmodule_status()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.clear_runs"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.clear_runs()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.emergency_stop"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.emergency_stop()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_tip"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.get_tip()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.get_tip_status"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.get_tip_status()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#AFL.automation.prepare.OT2HTTPDriver.OT2HTTPDriver.make_align_script"><code class="docutils literal notranslate"><span class="pre">OT2HTTPDriver.make_align_script()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/_autosummary/AFL.automation.prepare.OT2HTTPDriver.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright : Contribution of the US Government.  Not subject to copyright in the United States..
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+
+  <!-- Taken from https://www.filamentgroup.com/lab/html-includes/#another-demo%3A-including-another-html-file -->
+  <iframe src="../_static/ntd2d_menu.html" onload="this.before((this.contentDocument.body||this.contentDocument).children[0]);this.remove()"></iframe>
+  </body>
+</html>

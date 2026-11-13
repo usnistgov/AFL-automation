@@ -1,0 +1,13 @@
+AFL.automation.sample\_env.TemperatureDeck
+==========================================
+
+.. automodule:: AFL.automation.sample_env.TemperatureDeck
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Driver
+      TemperatureDeck
+   

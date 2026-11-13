@@ -4,10 +4,19 @@ AFL.automation.prepare.OT2Prepare
 .. automodule:: AFL.automation.prepare.OT2Prepare
 
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      capture_task_video
+      enforce_units
+      listify
+   
    .. rubric:: Classes
 
    .. autosummary::
    
+      Driver
       OT2HTTPDriver
       OT2Prepare
       PrepareDriver
